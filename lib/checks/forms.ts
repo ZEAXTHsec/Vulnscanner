@@ -55,8 +55,8 @@ export const formsCheck: Check = {
     }
 
     // Hidden fields that might leak internal data
-    const hiddenFields = html.match(/<input[^>]*type=["']hidden["'][^>]*>/gi) || []
-    const suspiciousHidden = hiddenFields.filter((f) => {
+    const hiddenFields: string[] = html.match(/<input[^>]*type=["']hidden["'][^>]*>/gi) || []
+    const suspiciousHidden = hiddenFields.filter((f: string) => {
       const nameMatch = f.match(/name=["']([^"']+)["']/i)
       const name = nameMatch ? nameMatch[1].toLowerCase() : ''
       return ['user_id', 'admin', 'role', 'is_admin', 'price', 'amount', 'discount'].some(
