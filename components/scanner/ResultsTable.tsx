@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import type React from 'react'
 import { ScanResult } from '@/lib/types'
 
 interface Props { results: ScanResult[]; url?: string; timestamp?: string }
@@ -27,7 +28,7 @@ const DownloadSVG = () => (
 )
 
 function StatusDot({ status }: { status: string }) {
-  const map: Record<string, { color: string; icon: JSX.Element }> = {
+  const map: Record<string, { color: string; icon: React.ReactNode }> = {
     pass: { color: 'var(--accent)', icon: (
       <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
         <polyline points="20 6 9 17 4 12"/>
