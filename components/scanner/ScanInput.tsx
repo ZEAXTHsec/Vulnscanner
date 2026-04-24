@@ -9,41 +9,83 @@ import TopIssues from './TopIssues'
 import FixAllBanner from './FixAllBanner'
 import TrustSignals from './TrustSignals'
 
-// Animated terminal lines that cycle while idle
-const TERMINAL_LINES = [
-  { num: '01', type: 'keyword', text: 'export default function ', bold: 'PaymentHandler', rest: '() {' },
-  { num: '02', type: 'comment', text: '// TODO: Refactor this later', bold: '', rest: '' },
-  { num: '03', type: 'normal', text: 'const stripeKey = ', bold: '"sk_live_············"', rest: ' ;' },
-  { num: '04', type: 'normal', text: 'const headers = {', bold: '', rest: '' },
-  { num: '05', type: 'string', text: '"Authorization"', bold: '', rest: ' : `Bearer ${stripeKey}`' },
-  { num: '06', type: 'normal', text: '};', bold: '', rest: '' },
-  { num: '07', type: 'normal', text: 'await fetch( ', bold: '"/api/charge"', rest: ', { method: "POST", headers });' },
-  { num: '08', type: 'normal', text: '}', bold: '', rest: '' },
-  { num: '09', type: 'keyword', text: 'export const config = { ', bold: '"cors"', rest: ' : false };' },
-]
+// ─── SVG Icons ────────────────────────────────────────────────────────────────
+const ArrowRightSVG = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+  </svg>
+)
+const GlobeSVG = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/>
+    <path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/>
+  </svg>
+)
+const SpinnerSVG = () => (
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" style={{ animation: 'spin 0.7s linear infinite' }}>
+    <path d="M21 12a9 9 0 11-6.219-8.56"/>
+  </svg>
+)
+const ZapSVG = () => (
+  <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor">
+    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+  </svg>
+)
+const ShieldSVG = () => (
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+  </svg>
+)
+const ClockSVG = () => (
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+  </svg>
+)
+const SearchSVG = () => (
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+  </svg>
+)
+const WarnSVG = ({ color }: { color: string }) => (
+  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+    <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+  </svg>
+)
+const AlertCircleSVG = ({ color }: { color: string }) => (
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+  </svg>
+)
 
-const SCANNING_BADGES = [
-  { line: 3, label: '⚠ Exposed API Key', color: '#ff4d6a', bg: 'rgba(255,77,106,0.15)' },
-  { line: 7, label: '⚠ CORS Misconfigured', color: '#f5c842', bg: 'rgba(245,200,66,0.12)' },
+// ─── Terminal data ────────────────────────────────────────────────────────────
+const TERMINAL_LINES = [
+  { num: '01', tokens: [{ c: '#7dd3fc', v: 'export default function ' }, { c: '#c084fc', v: 'PaymentHandler' }, { c: '#94a3b8', v: '() {' }] },
+  { num: '02', tokens: [{ c: '#3d5060', v: '  // TODO: Refactor this later' }] },
+  { num: '03', tokens: [{ c: '#7dd3fc', v: '  const ' }, { c: '#94a3b8', v: 'stripeKey = ' }, { c: '#86efac', v: '"sk_live_············"' }, { c: '#94a3b8', v: ';' }], badge: { label: 'Exposed API Key', color: '#f0516a', bg: 'rgba(240,81,106,0.13)' } },
+  { num: '04', tokens: [{ c: '#7dd3fc', v: '  const ' }, { c: '#94a3b8', v: 'headers = {' }] },
+  { num: '05', tokens: [{ c: '#86efac', v: '    "Authorization"' }, { c: '#94a3b8', v: ': `Bearer ${stripeKey}`' }] },
+  { num: '06', tokens: [{ c: '#94a3b8', v: '  };' }] },
+  { num: '07', tokens: [{ c: '#7dd3fc', v: '  await ' }, { c: '#c084fc', v: 'fetch' }, { c: '#94a3b8', v: '(' }, { c: '#86efac', v: '"/api/charge"' }, { c: '#94a3b8', v: ', { method: ' }, { c: '#86efac', v: '"POST"' }, { c: '#94a3b8', v: ', headers });' }] },
+  { num: '08', tokens: [{ c: '#94a3b8', v: '}' }] },
+  { num: '09', tokens: [{ c: '#7dd3fc', v: 'export const ' }, { c: '#94a3b8', v: 'config = { ' }, { c: '#86efac', v: '"cors"' }, { c: '#94a3b8', v: ': ' }, { c: '#7dd3fc', v: 'false' }, { c: '#94a3b8', v: ' };' }], badge: { label: 'CORS Misconfigured', color: '#fbbf24', bg: 'rgba(251,191,36,0.11)' } },
 ]
 
 const STATS = [
-  { value: '23+', label: 'Security Checks' },
-  { value: '<10s', label: 'Scan Time' },
-  { value: '100%', label: 'Free to Use' },
+  { icon: <SearchSVG />, value: '23+', label: 'Checks' },
+  { icon: <ClockSVG />, value: '<10s', label: 'Scan time' },
+  { icon: <ShieldSVG />, value: '0', label: 'Data stored' },
 ]
 
 export default function ScanInput() {
   const [url, setUrl] = useState('')
   const { scan, isLoading, report, error } = useScan()
   const [activeBadge, setActiveBadge] = useState(0)
-  const [scanLinePos, setScanLinePos] = useState(false)
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
     setMounted(true)
-    // Cycle scan badges
-    const t = setInterval(() => setActiveBadge(p => (p + 1) % SCANNING_BADGES.length), 2800)
+    const t = setInterval(() => setActiveBadge(p => (p + 1) % 2), 2700)
     return () => clearInterval(t)
   }, [])
 
@@ -55,269 +97,204 @@ export default function ScanInput() {
       {!report && (
         <div style={{
           textAlign: 'center',
-          padding: '5rem 0 3rem',
-          animation: mounted ? 'fadeUp 0.6s ease both' : 'none',
+          padding: '4rem 0 2rem',
+          animation: mounted ? 'fadeUp 0.5s cubic-bezier(0.22,1,0.36,1) both' : 'none',
         }}>
-          {/* Badge */}
+          {/* Eyebrow pill */}
           <div style={{
-            display: 'inline-flex', alignItems: 'center', gap: '7px',
-            padding: '5px 14px',
+            display: 'inline-flex', alignItems: 'center', gap: '6px',
+            padding: '4px 13px',
             background: 'var(--accent-dim)',
-            border: '1px solid rgba(0,229,135,0.2)',
+            border: '1px solid rgba(34,211,168,0.18)',
             borderRadius: '999px',
-            marginBottom: '1.8rem',
-            fontSize: '0.75rem',
-            fontWeight: 600,
-            color: 'var(--accent)',
-            letterSpacing: '0.03em',
+            marginBottom: '1.5rem',
+            fontSize: '0.68rem', fontWeight: 700, color: 'var(--accent)',
+            letterSpacing: '0.06em', textTransform: 'uppercase',
           }}>
-            <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--accent)', animation: 'pulse 2s infinite' }} />
-            AI-powered security analysis
+            <span style={{ animation: 'pulse 2s infinite', display: 'flex' }}><ZapSVG /></span>
+            AI-Powered Security Scanner
           </div>
 
           {/* Headline */}
           <h1 style={{
-            fontFamily: 'var(--font-display)',
-            fontSize: 'clamp(2.4rem, 6vw, 4rem)',
-            fontWeight: 800,
+            fontSize: 'clamp(2rem, 5.5vw, 3.4rem)',
+            fontWeight: 700,
             lineHeight: 1.1,
-            letterSpacing: '-0.03em',
-            marginBottom: '1.2rem',
+            letterSpacing: '-0.04em',
+            marginBottom: '1rem',
             color: 'var(--text)',
+            fontFamily: 'var(--font-ui)',
           }}>
             Find security issues<br />
             <span style={{
-              background: 'linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%)',
+              background: 'linear-gradient(100deg, var(--accent) 0%, var(--accent-2) 100%)',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
             }}>before attackers do</span>
           </h1>
 
-          {/* Sub */}
-          <p style={{
-            fontSize: '1rem',
-            color: 'var(--text-muted)',
-            marginBottom: '2.5rem',
-            fontWeight: 300,
-          }}>
-            23 security checks · AI-powered fixes · Results in under 10 seconds
+          <p style={{ fontSize: '0.97rem', color: 'var(--text-sub)', marginBottom: '2.2rem', lineHeight: 1.7 }}>
+            Instant vulnerability scan · Stack-aware AI fixes · No sign-up
           </p>
 
-          {/* Input */}
+          {/* Search bar */}
           <div style={{
-            display: 'flex',
-            maxWidth: '580px',
-            margin: '0 auto 1rem',
-            gap: '0',
-            borderRadius: 'var(--radius)',
-            border: '1px solid var(--border-mid)',
+            display: 'flex', maxWidth: '540px', margin: '0 auto 0.7rem',
             background: 'var(--bg-card)',
+            border: '1px solid var(--border-mid)',
+            borderRadius: 'var(--radius-lg)',
             overflow: 'hidden',
-            transition: 'border-color 0.2s',
-          }}
-            onFocus={() => {}}
-          >
+            boxShadow: '0 0 0 0 transparent',
+          }}>
             <span style={{
-              padding: '0 14px',
-              display: 'flex',
-              alignItems: 'center',
-              color: 'var(--text-muted)',
-              fontSize: '0.9rem',
-              borderRight: '1px solid var(--border)',
-              flexShrink: 0,
-            }}>https://</span>
+              padding: '0 14px', display: 'flex', alignItems: 'center',
+              color: 'var(--text-muted)', borderRight: '1px solid var(--border)', flexShrink: 0,
+            }}><GlobeSVG /></span>
             <input
               value={url}
               onChange={e => setUrl(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && handleScan()}
               placeholder="yourdomain.com"
               style={{
-                flex: 1,
-                padding: '14px 16px',
-                background: 'transparent',
-                border: 'none',
-                outline: 'none',
-                color: 'var(--text)',
-                fontSize: '0.95rem',
-                fontFamily: 'var(--font-mono)',
+                flex: 1, padding: '13px 14px',
+                background: 'transparent', border: 'none', outline: 'none',
+                color: 'var(--text)', fontSize: '0.9rem', fontFamily: 'var(--font-mono)',
+                letterSpacing: '0.01em',
               }}
             />
             <button
               onClick={handleScan}
               disabled={isLoading}
               style={{
-                padding: '0 24px',
+                padding: '0 22px',
                 background: isLoading ? 'var(--bg-elevated)' : 'var(--accent)',
-                color: isLoading ? 'var(--text-muted)' : '#07090f',
-                border: 'none',
-                fontWeight: 700,
-                fontSize: '0.88rem',
+                color: isLoading ? 'var(--text-muted)' : '#04060d',
+                border: 'none', fontWeight: 700, fontSize: '0.84rem',
                 cursor: isLoading ? 'not-allowed' : 'pointer',
-                whiteSpace: 'nowrap',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                transition: 'background 0.2s',
-                fontFamily: 'var(--font-display)',
-                letterSpacing: '-0.01em',
+                display: 'flex', alignItems: 'center', gap: '7px',
+                transition: 'background 0.15s', whiteSpace: 'nowrap',
+                letterSpacing: '-0.01em', fontFamily: 'var(--font-ui)',
               }}
             >
-              {isLoading ? (
-                <>
-                  <span style={{
-                    width: '14px', height: '14px',
-                    border: '2px solid var(--text-dim)',
-                    borderTopColor: 'var(--accent)',
-                    borderRadius: '50%',
-                    animation: 'spin 0.8s linear infinite',
-                    display: 'inline-block',
-                    flexShrink: 0,
-                  }} />
-                  Scanning...
-                </>
-              ) : '→ Scan Site'}
+              {isLoading ? <><SpinnerSVG /> Scanning…</> : <><ArrowRightSVG /> Scan</>}
             </button>
           </div>
 
+          <p style={{ fontSize: '0.7rem', color: 'var(--text-dim)', marginBottom: '2.5rem', fontFamily: 'var(--font-mono)' }}>
+            free · no login · results in ~10s
+          </p>
+
           {/* Stats row */}
           <div style={{
-            display: 'flex',
-            justifyContent: 'center',
-            gap: '2.5rem',
-            marginTop: '2rem',
+            display: 'inline-flex', gap: '0', marginBottom: '3rem',
+            background: 'var(--bg-card)',
+            border: '1px solid var(--border)',
+            borderRadius: 'var(--radius-lg)',
+            overflow: 'hidden',
           }}>
-            {STATS.map(s => (
-              <div key={s.label} style={{ textAlign: 'center' }}>
+            {STATS.map((s, i) => (
+              <div key={s.label} style={{
+                padding: '12px 24px', textAlign: 'center',
+                borderRight: i < STATS.length - 1 ? '1px solid var(--border)' : 'none',
+              }}>
                 <div style={{
-                  fontFamily: 'var(--font-display)',
-                  fontSize: '1.4rem',
-                  fontWeight: 800,
-                  color: 'var(--accent)',
-                  lineHeight: 1,
-                  marginBottom: '3px',
+                  fontSize: '1.4rem', fontWeight: 700, color: 'var(--accent)',
+                  lineHeight: 1, letterSpacing: '-0.03em', marginBottom: '3px',
+                  fontFamily: 'var(--font-mono)',
                 }}>{s.value}</div>
-                <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', letterSpacing: '0.03em' }}>{s.label}</div>
+                <div style={{
+                  fontSize: '0.68rem', color: 'var(--text-muted)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px',
+                }}>
+                  <span style={{ color: 'var(--text-dim)', display: 'flex' }}>{s.icon}</span>
+                  {s.label}
+                </div>
               </div>
             ))}
           </div>
 
           {/* Animated terminal */}
           <div style={{
-            maxWidth: '700px',
-            margin: '3.5rem auto 0',
-            borderRadius: 'var(--radius-lg)',
-            overflow: 'hidden',
+            maxWidth: '680px', margin: '0 auto',
+            borderRadius: 'var(--radius-xl)',
             border: '1px solid var(--border-mid)',
-            background: '#0a0e18',
-            boxShadow: '0 32px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04)',
-            textAlign: 'left',
-            position: 'relative',
+            background: '#06080f',
+            boxShadow: '0 0 0 1px rgba(34,211,168,0.04), 0 32px 80px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.03)',
+            overflow: 'hidden', textAlign: 'left',
           }}>
             {/* Title bar */}
             <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              padding: '12px 16px',
+              display: 'flex', alignItems: 'center', gap: '7px',
+              padding: '10px 16px',
+              background: '#04060d',
               borderBottom: '1px solid var(--border)',
-              background: '#080c14',
             }}>
-              <span style={{ width: '11px', height: '11px', borderRadius: '50%', background: '#ff5f56' }} />
-              <span style={{ width: '11px', height: '11px', borderRadius: '50%', background: '#ffbd2e' }} />
-              <span style={{ width: '11px', height: '11px', borderRadius: '50%', background: '#27c93f' }} />
+              <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#ff5f57', flexShrink: 0 }} />
+              <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#febc2e', flexShrink: 0 }} />
+              <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#28c840', flexShrink: 0 }} />
+              <span style={{ marginLeft: 'auto', fontSize: '0.68rem', color: 'var(--text-dim)', fontFamily: 'var(--font-mono)' }}>
+                analysis_result.ts
+              </span>
               <span style={{
-                marginLeft: 'auto',
-                fontSize: '0.72rem',
-                color: 'var(--text-dim)',
-                fontFamily: 'var(--font-mono)',
-              }}>analysis_result.json</span>
-              {/* Live scanning badge */}
-              <span style={{
-                padding: '2px 8px',
-                background: 'var(--accent)',
-                color: '#07090f',
-                borderRadius: '4px',
-                fontSize: '0.65rem',
-                fontWeight: 700,
-                letterSpacing: '0.06em',
-                animation: 'pulse 2s ease-in-out infinite',
-              }}>SCANNING</span>
+                padding: '2px 8px', background: 'var(--accent)', color: '#04060d',
+                borderRadius: '4px', fontSize: '0.6rem', fontWeight: 700,
+                letterSpacing: '0.06em', animation: 'pulse 2s ease-in-out infinite',
+              }}>LIVE</span>
             </div>
 
-            {/* Code area */}
+            {/* Code body */}
             <div style={{ position: 'relative', overflow: 'hidden' }}>
-              {/* Scan line sweep */}
+              {/* Scan sweep line */}
               <div style={{
-                position: 'absolute',
-                left: 0, right: 0,
-                height: '2px',
-                background: 'linear-gradient(90deg, transparent, var(--accent), transparent)',
+                position: 'absolute', left: 0, right: 0, height: '1.5px',
+                background: 'linear-gradient(90deg, transparent 0%, var(--accent) 30%, var(--accent-2) 70%, transparent 100%)',
                 animation: 'scanLine 3s ease-in-out infinite',
-                zIndex: 2,
-                opacity: 0.6,
+                zIndex: 2, opacity: 0.6,
               }} />
 
               {TERMINAL_LINES.map((line, i) => {
-                const badge = SCANNING_BADGES.find(b => b.line === parseInt(line.num))
-                const showBadge = badge && activeBadge === SCANNING_BADGES.indexOf(badge)
+                const b = line.badge
+                const active = b
+                  ? (line.num === '03' && activeBadge === 0) || (line.num === '09' && activeBadge === 1)
+                  : false
 
                 return (
-                  <div
-                    key={i}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      padding: '4px 16px',
-                      background: line.num === '03' && activeBadge === 0
-                        ? 'rgba(255,77,106,0.07)'
-                        : line.num === '09' && activeBadge === 1
-                        ? 'rgba(245,200,66,0.06)'
-                        : 'transparent',
-                      transition: 'background 0.3s',
-                      minHeight: '28px',
-                    }}
-                  >
+                  <div key={i} style={{
+                    display: 'flex', alignItems: 'center',
+                    padding: '3px 16px', minHeight: '27px',
+                    background: active
+                      ? (line.num === '03' ? 'rgba(240,81,106,0.05)' : 'rgba(251,191,36,0.04)')
+                      : 'transparent',
+                    transition: 'background 0.4s',
+                  }}>
                     <span style={{
-                      minWidth: '28px',
-                      color: 'var(--text-dim)',
-                      fontSize: '0.72rem',
-                      fontFamily: 'var(--font-mono)',
-                      userSelect: 'none',
-                      marginRight: '12px',
+                      minWidth: '24px', color: 'var(--text-dim)',
+                      fontSize: '0.67rem', fontFamily: 'var(--font-mono)',
+                      userSelect: 'none', marginRight: '16px', flexShrink: 0,
                     }}>{line.num}</span>
-                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.8rem', flex: 1 }}>
-                      <span style={{
-                        color: line.type === 'keyword' ? '#7dd3fc'
-                          : line.type === 'comment' ? '#4d6a7a'
-                          : line.type === 'string' ? '#86efac'
-                          : '#94a3b8'
-                      }}>{line.text}</span>
-                      {line.bold && (
-                        <span style={{
-                          color: line.num === '03' ? '#ff4d6a'
-                            : line.type === 'keyword' ? '#f0abfc'
-                            : '#fbbf24',
-                          fontWeight: 500,
-                        }}>{line.bold}</span>
-                      )}
-                      <span style={{ color: '#94a3b8' }}>{line.rest}</span>
+                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.77rem', flex: 1, letterSpacing: '0.01em' }}>
+                      {line.tokens.map((tk, j) => (
+                        <span key={j} style={{ color: tk.c }}>{tk.v}</span>
+                      ))}
                     </span>
-                    {/* Issue badge */}
-                    {badge && (
+                    {b && (
                       <span style={{
-                        padding: '2px 10px',
-                        background: badge.bg,
-                        color: badge.color,
-                        border: `1px solid ${badge.color}40`,
+                        display: 'flex', alignItems: 'center', gap: '5px',
+                        padding: '2px 8px',
+                        background: b.bg,
+                        color: b.color,
+                        border: `1px solid ${b.color}30`,
                         borderRadius: '5px',
-                        fontSize: '0.68rem',
-                        fontWeight: 600,
-                        whiteSpace: 'nowrap',
-                        opacity: showBadge ? 1 : 0,
-                        transform: showBadge ? 'translateX(0)' : 'translateX(8px)',
-                        transition: 'all 0.4s ease',
+                        fontSize: '0.64rem', fontWeight: 700, whiteSpace: 'nowrap',
                         fontFamily: 'var(--font-mono)',
-                      }}>{badge.label}</span>
+                        opacity: active ? 1 : 0,
+                        transform: active ? 'translateX(0)' : 'translateX(8px)',
+                        transition: 'opacity 0.4s, transform 0.4s',
+                      }}>
+                        <WarnSVG color={b.color} />
+                        {b.label}
+                      </span>
                     )}
                   </div>
                 )
@@ -330,69 +307,55 @@ export default function ScanInput() {
       {/* ── Error ─────────────────────────────────────────────────── */}
       {error && (
         <div style={{
-          background: 'var(--red-dim)',
-          border: '1px solid rgba(255,77,106,0.25)',
-          color: 'var(--red)',
-          padding: '12px 18px',
-          borderRadius: 'var(--radius)',
-          marginBottom: '1.5rem',
-          fontSize: '0.88rem',
-          fontFamily: 'var(--font-mono)',
-        }}>⚠ {error}</div>
+          background: 'var(--red-dim)', border: '1px solid rgba(240,81,106,0.2)',
+          color: 'var(--red)', padding: '11px 16px', borderRadius: 'var(--radius)',
+          marginBottom: '1.5rem', fontSize: '0.84rem', fontFamily: 'var(--font-mono)',
+          display: 'flex', alignItems: 'center', gap: '8px',
+        }}>
+          <AlertCircleSVG color="var(--red)" /> {error}
+        </div>
       )}
 
-      {/* ── Compact input bar after scan ──────────────────────────── */}
+      {/* ── Compact rescan ────────────────────────────────────────── */}
       {report && (
         <div style={{
-          display: 'flex',
-          gap: '0',
-          margin: '2rem 0 2rem',
-          borderRadius: 'var(--radius)',
-          border: '1px solid var(--border-mid)',
-          background: 'var(--bg-card)',
-          overflow: 'hidden',
-          maxWidth: '600px',
+          display: 'flex', margin: '2rem 0 1.5rem',
+          background: 'var(--bg-card)', border: '1px solid var(--border-mid)',
+          borderRadius: 'var(--radius-lg)', overflow: 'hidden', maxWidth: '520px',
         }}>
           <span style={{
-            padding: '0 14px',
-            display: 'flex', alignItems: 'center',
-            color: 'var(--text-muted)', fontSize: '0.85rem',
-            borderRight: '1px solid var(--border)', flexShrink: 0,
-          }}>https://</span>
+            padding: '0 12px', display: 'flex', alignItems: 'center',
+            color: 'var(--text-muted)', borderRight: '1px solid var(--border)', flexShrink: 0,
+          }}><GlobeSVG /></span>
           <input
             value={url}
             onChange={e => setUrl(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && handleScan()}
-            placeholder="scan another domain..."
+            placeholder="scan another domain…"
             style={{
-              flex: 1, padding: '11px 14px',
+              flex: 1, padding: '10px 13px',
               background: 'transparent', border: 'none', outline: 'none',
-              color: 'var(--text)', fontSize: '0.88rem', fontFamily: 'var(--font-mono)',
+              color: 'var(--text)', fontSize: '0.85rem', fontFamily: 'var(--font-mono)',
             }}
           />
           <button onClick={handleScan} disabled={isLoading} style={{
-            padding: '0 20px',
+            padding: '0 18px',
             background: isLoading ? 'var(--bg-elevated)' : 'var(--accent)',
-            color: isLoading ? 'var(--text-muted)' : '#07090f',
-            border: 'none', fontWeight: 700, fontSize: '0.82rem',
+            color: isLoading ? 'var(--text-muted)' : '#04060d',
+            border: 'none', fontWeight: 700, fontSize: '0.8rem',
             cursor: isLoading ? 'not-allowed' : 'pointer',
             display: 'flex', alignItems: 'center', gap: '6px',
-            fontFamily: 'var(--font-display)',
+            transition: 'background 0.15s', fontFamily: 'var(--font-ui)',
           }}>
-            {isLoading ? (
-              <span style={{
-                width: '12px', height: '12px', border: '2px solid var(--text-dim)',
-                borderTopColor: 'var(--accent)', borderRadius: '50%',
-                animation: 'spin 0.8s linear infinite', display: 'inline-block',
-              }} />
-            ) : '→'} {isLoading ? 'Scanning...' : 'Rescan'}
+            {isLoading ? <SpinnerSVG /> : <ArrowRightSVG />}
+            {isLoading ? 'Scanning…' : 'Rescan'}
           </button>
         </div>
       )}
 
       {/* ── Report ────────────────────────────────────────────────── */}
       {report && (
-        <div style={{ animation: 'fadeUp 0.5s ease both' }}>
+        <div style={{ animation: 'fadeUp 0.4s cubic-bezier(0.22,1,0.36,1) both' }}>
           <SummaryCards summary={report.summary} url={report.url} timestamp={report.timestamp} />
           <TechBadges results={report.results} />
           <FixAllBanner results={report.results} summary={report.summary} url={report.url} />

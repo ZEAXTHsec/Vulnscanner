@@ -4,6 +4,24 @@ import { ScanResult, ScanSummary } from '@/lib/types'
 
 interface Props { results: ScanResult[]; summary: ScanSummary }
 
+const ShieldCheckSVG = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+    <polyline points="9 12 11 14 15 10"/>
+  </svg>
+)
+const CheckCircleSVG = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+  </svg>
+)
+const GreenDotSVG = () => (
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+    <circle cx="8" cy="8" r="7" fill="rgba(34,211,168,0.1)" stroke="rgba(34,211,168,0.25)" strokeWidth="1"/>
+    <polyline points="5 8 7 10 11 6" stroke="var(--accent)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+)
+
 export default function TrustSignals({ results, summary }: Props) {
   const noSecrets  = results.some(r => r.checkId === 'secrets-ok')
   const hasHttps   = results.some(r => r.checkId === 'https-ok')
@@ -12,11 +30,11 @@ export default function TrustSignals({ results, summary }: Props) {
   const noTakeover = results.some(r => r.checkId === 'takeover-ok')
 
   const signals: string[] = []
-  if (hasHttps)    signals.push('All traffic encrypted over HTTPS')
-  if (noSecrets)   signals.push('No API keys or secrets in source')
-  if (noXss)       signals.push('No XSS injection patterns detected')
-  if (noExposed)   signals.push('No sensitive files publicly accessible')
-  if (noTakeover)  signals.push('No subdomain takeover vulnerabilities')
+  if (hasHttps)          signals.push('All traffic encrypted over HTTPS')
+  if (noSecrets)         signals.push('No API keys or secrets in source')
+  if (noXss)             signals.push('No XSS injection patterns detected')
+  if (noExposed)         signals.push('No sensitive files publicly accessible')
+  if (noTakeover)        signals.push('No subdomain takeover vulnerabilities')
   if (summary.high === 0) signals.push('No critical vulnerabilities found')
 
   if (signals.length === 0) return null
@@ -24,7 +42,7 @@ export default function TrustSignals({ results, summary }: Props) {
   return (
     <div style={{
       background: 'var(--bg-card)',
-      border: '1px solid rgba(0,229,135,0.15)',
+      border: '1px solid rgba(34,211,168,0.12)',
       borderRadius: 'var(--radius-lg)',
       padding: '18px 22px',
       marginTop: '1.5rem',
@@ -32,31 +50,26 @@ export default function TrustSignals({ results, summary }: Props) {
     }}>
       <div style={{
         position: 'absolute', top: 0, left: 0, right: 0, height: '1px',
-        background: 'linear-gradient(90deg, transparent, rgba(0,229,135,0.4), transparent)',
+        background: 'linear-gradient(90deg, transparent, rgba(34,211,168,0.35), transparent)',
       }} />
       <div style={{
-        fontFamily: 'var(--font-display)', fontWeight: 700,
-        fontSize: '0.85rem', color: 'var(--accent)', marginBottom: '12px',
-        display: 'flex', alignItems: 'center', gap: '8px',
+        fontWeight: 700, fontSize: '0.84rem', color: 'var(--accent)',
+        marginBottom: '12px',
+        display: 'flex', alignItems: 'center', gap: '7px', letterSpacing: '-0.01em',
       }}>
-        <span>✅</span> What passed
+        <ShieldCheckSVG /> What passed
       </div>
       <div style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
+        gridTemplateColumns: 'repeat(auto-fill, minmax(255px, 1fr))',
         gap: '6px',
       }}>
         {signals.map(s => (
           <div key={s} style={{
-            display: 'flex', alignItems: 'center', gap: '9px',
-            fontSize: '0.82rem', color: 'var(--text-muted)',
+            display: 'flex', alignItems: 'center', gap: '8px',
+            fontSize: '0.81rem', color: 'var(--text-sub)',
           }}>
-            <span style={{
-              color: 'var(--accent)', fontWeight: 700, fontSize: '0.75rem',
-              background: 'var(--accent-dim)', width: '18px', height: '18px',
-              borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-              flexShrink: 0,
-            }}>✓</span>
+            <span style={{ flexShrink: 0, display: 'flex' }}><GreenDotSVG /></span>
             {s}
           </div>
         ))}
@@ -65,10 +78,10 @@ export default function TrustSignals({ results, summary }: Props) {
         <div style={{
           marginTop: '14px', paddingTop: '14px',
           borderTop: '1px solid var(--border)',
-          fontSize: '0.82rem', color: 'var(--accent)', fontWeight: 600,
-          display: 'flex', alignItems: 'center', gap: '8px',
+          fontSize: '0.81rem', color: 'var(--accent)', fontWeight: 600,
+          display: 'flex', alignItems: 'center', gap: '7px',
         }}>
-          <span>🟢</span> Safe to deploy after fixing the issues above
+          <CheckCircleSVG /> Safe to deploy after addressing the issues above
         </div>
       )}
     </div>
