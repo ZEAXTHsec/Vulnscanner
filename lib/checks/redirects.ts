@@ -18,7 +18,7 @@ export const redirectsCheck: Check = {
     const html = ctx.html
 
     // Check for open redirect params in links
-    const allLinks = html.match(/href=["'][^"']*["']/gi) || []
+    const allLinks: string[] = html.match(/href=["'][^"']*["']/gi) || []
     const suspiciousLinks: string[] = []
 
     for (const link of allLinks) {
@@ -54,7 +54,7 @@ export const redirectsCheck: Check = {
     }
 
     // Check for meta refresh redirects
-    const metaRefresh = html.match(/<meta[^>]*http-equiv=["']refresh["'][^>]*>/gi) || []
+    const metaRefresh: string[] = html.match(/<meta[^>]*http-equiv=["']refresh["'][^>]*>/gi) || []
     if (metaRefresh.length > 0) {
       const externalRefresh = metaRefresh.filter((m) => /url=https?:\/\//i.test(m))
       if (externalRefresh.length > 0) {

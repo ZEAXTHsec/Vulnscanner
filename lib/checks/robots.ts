@@ -32,8 +32,8 @@ export const robotsCheck: Check = {
       })
     } else {
       // Check if robots.txt leaks sensitive paths via Disallow
-      const disallowLines = robotsTxt.match(/^Disallow:\s*.+/gim) || []
-      const sensitiveLeaks = disallowLines.filter((line) => {
+      const disallowLines: string[] = robotsTxt.match(/^Disallow:\s*.+/gim) || []
+      const sensitiveLeaks = disallowLines.filter((line: string) => {
         const path = line.replace(/^Disallow:\s*/i, '').trim().toLowerCase()
         return [
           '/admin', '/api', '/backup', '/config', '/database',
@@ -85,7 +85,7 @@ export const robotsCheck: Check = {
         if (res.statusCode === 200) {
           sitemapFound = true
           // Check if sitemap leaks internal/staging URLs
-          const stagingUrls = (res.html || '').match(/https?:\/\/(staging|dev|test|internal|admin)\./gi) || []
+          const stagingUrls: string[] = (res.html || '').match(/https?:\/\/(staging|dev|test|internal|admin)\./gi) || []
           if (stagingUrls.length > 0) {
             results.push({
               checkId: 'sitemap-staging-urls',

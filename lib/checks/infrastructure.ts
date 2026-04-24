@@ -119,7 +119,7 @@ export const infrastructureCheck: Check = {
     }
 
     // Version numbers in HTML comments
-    const versionComments = html.match(/<!--[^>]*v?\d+\.\d+[\.\d]*[^>]*-->/gi) || []
+    const versionComments: string[] = html.match(/<!--[^>]*v?\d+\.\d+[\.\d]*[^>]*-->/gi) || []
     if (versionComments.length > 0) {
       results.push({
         checkId: 'infra-version-comments',

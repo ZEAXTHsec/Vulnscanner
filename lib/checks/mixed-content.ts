@@ -38,8 +38,8 @@ function extractHttpResources(
     while ((match = tagPattern.exec(html)) !== null) {
       // Skip matches inside <script> blocks
       const before = html.slice(0, match.index)
-      const openScripts = (before.match(/<script\b/gi) || []).length
-      const closeScripts = (before.match(/<\/script>/gi) || []).length
+      const openScripts: number = (before.match(/<script\b/gi) || []).length
+      const closeScripts: number = (before.match(/<\/script>/gi) || []).length
       if (openScripts > closeScripts) continue
       found.push({ tag, url: match[1], type })
     }
@@ -54,7 +54,7 @@ function extractInlineCssHttp(html: string): MixedResource[] {
   while ((m = styleAttr.exec(html)) !== null) {
     found.push({ tag: 'style[attr]', url: m[1], type: 'passive' })
   }
-  const styleBlocks = html.match(/<style[^>]*>([\s\S]*?)<\/style>/gi) || []
+  const styleBlocks: string[] = html.match(/<style[^>]*>([\s\S]*?)<\/style>/gi) || []
   for (const block of styleBlocks) {
     const urlPattern = /url\(['"]?(http:\/\/[^'")]+)['"]?\)/gi
     while ((m = urlPattern.exec(block)) !== null) {
@@ -124,10 +124,10 @@ export const mixedContentCheck: Check = {
     }
 
     // Only scan inside <script> blocks for fetch/XHR — avoids false positives from HTML attributes
-    const scriptBlocks = html.match(/<script\b[^>]*>([\s\S]*?)<\/script>/gi) || []
+    const scriptBlocks: string[] = html.match(/<script\b[^>]*>([\s\S]*?)<\/script>/gi) || []
     const scriptContent = scriptBlocks.join('\n')
-    const inlineHttpFetch = (scriptContent.match(/fetch\(['"]http:\/\/[^'"]+['"]/gi) || []).length
-    const inlineHttpXhr = (scriptContent.match(/\.open\(['"][A-Z]+['"],\s*['"]http:\/\/[^'"]+['"]/gi) || []).length
+    const inlineHttpFetch: number = (scriptContent.match(/fetch\(['"]http:\/\/[^'"]+['"]/gi) || []).length
+    const inlineHttpXhr: number = (scriptContent.match(/\.open\(['"][A-Z]+['"],\s*['"]http:\/\/[^'"]+['"]/gi) || []).length
     const inlineCount = inlineHttpFetch + inlineHttpXhr
 
     if (inlineCount > 0) {

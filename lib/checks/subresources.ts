@@ -12,7 +12,7 @@ export const subresourcesCheck: Check = {
     const html = ctx.html
 
     // Scripts loaded from CDNs without SRI
-    const externalScripts = html.match(/<script[^>]*src=["']https?:\/\/(?!(?:www\.)?${new URL(ctx.url).hostname})[^"']+["'][^>]*>/gi) || []
+    const externalScripts: string[] = html.match(/<script[^>]*src=["']https?:\/\/(?!(?:www\.)?${new URL(ctx.url).hostname})[^"']+["'][^>]*>/gi) || []
     const scriptsWithoutSri = externalScripts.filter((s) => !/integrity=["']/i.test(s))
 
     if (scriptsWithoutSri.length > 0) {
@@ -38,7 +38,7 @@ export const subresourcesCheck: Check = {
 
     // Count unique third-party domains
     const thirdPartyDomains = new Set<string>()
-    const allSrcs = html.match(/(?:src|href)=["'](https?:\/\/[^/"']+)/gi) || []
+    const allSrcs: string[] = html.match(/(?:src|href)=["'](https?:\/\/[^/"']+)/gi) || []
     const ownHost = new URL(ctx.url).hostname
 
     for (const src of allSrcs) {

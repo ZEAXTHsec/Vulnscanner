@@ -13,7 +13,7 @@ export const injectionCheck: Check = {
     const html = ctx.html
 
     // Check 1: Forms without CSRF tokens
-    const formMatches = html.match(/<form[^>]*>/gi) || []
+    const formMatches: string[] = html.match(/<form[^>]*>/gi) || []
     const csrfSignals = [
       '_token', 'csrf', 'nonce', '__RequestVerificationToken',
       'authenticity_token', 'wp_nonce'
