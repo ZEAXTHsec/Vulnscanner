@@ -1,7 +1,7 @@
 // app/api/scan/route.ts
 
 import { NextRequest, NextResponse } from 'next/server'
-import { fetchTarget } from '@/lib/scanner/fetcher'
+import { crawlTarget } from '@/lib/scanner/crawler'
 import { runScan } from '@/lib/scanner/runner'
 import { saveScan } from '@/lib/scanner/save-scan'
 import { ScanContext } from '@/lib/types'
@@ -48,25 +48,27 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    const fetched = await fetchTarget(url)
+    const crawl = await crawlTarget(url)
+    const { primary, stats: crawlStats } = crawl
 
-    if (fetched.error) {
+    if (primary.error) {
       return NextResponse.json(
-        { error: fetched.error },
+        { error: primary.error },
         { status: 502 }
       )
     }
 
-    const stack = detectStack(fetched.headers, fetched.html)
+    const stack = detectStack(primary.headers, primary.html)
 
     const ctx: ScanContext = {
       scanId: crypto.randomUUID(),
-      url: fetched.url,
-      html: fetched.html,
-      headers: fetched.headers,
-      statusCode: fetched.statusCode,
+      url: primary.url,
+      html: primary.html,
+      headers: primary.headers,
+      statusCode: primary.statusCode,
       timestamp: new Date().toISOString(),
       stack,
+      crawlStats,
     }
 
     let report

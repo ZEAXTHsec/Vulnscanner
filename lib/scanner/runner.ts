@@ -1,7 +1,7 @@
 // lib/scanner/runner.ts
 
 import { checks } from '@/lib/checks/index'
-import { ScanContext, ScanResult, ScanReport, ScanSummary } from '@/lib/types'
+import { ScanContext, ScanResult, ScanReport, ScanSummary, CrawlStats } from '@/lib/types'
 import { SCAN_CONFIG } from '@/lib/constants'
 
 async function runWithConcurrency(
@@ -70,7 +70,7 @@ const PENALTY: Record<string, number> = {
   info:   0,
 }
 
-function computeSummary(results: ScanResult[]): ScanSummary {
+function computeSummary(results: ScanResult[], crawlStats: CrawlStats): ScanSummary {
   const summary: ScanSummary = {
     total: results.length,
     high: 0,
@@ -80,13 +80,13 @@ function computeSummary(results: ScanResult[]): ScanSummary {
     info: 0,
     skipped: 0,
     score: 100,
+    crawlStats,
   }
 
   let penalty = 0
 
   for (const r of results) {
     if (r.status === 'pass') {
-      // Split passes: info checks go to summary.info, scored checks go to summary.passed
       if (r.severity === 'info') {
         summary.info++
       } else {
@@ -95,15 +95,25 @@ function computeSummary(results: ScanResult[]): ScanSummary {
     } else if (r.status === 'skip') {
       summary.skipped++
     } else {
-      // fail — accumulate penalty and count by severity
       if (r.severity === 'high')        { summary.high++;   penalty += PENALTY.high }
       else if (r.severity === 'medium') { summary.medium++; penalty += PENALTY.medium }
       else if (r.severity === 'low')    { summary.low++;    penalty += PENALTY.low }
-      // info failures (rare) don't affect score
     }
   }
 
-  summary.score = Math.max(0, 100 - penalty)
+  let score = Math.max(0, 100 - penalty)
+
+  // Score capping: critical issues hard-cap the maximum score.
+  // Each additional critical pushes the ceiling lower within the 0–60 band.
+  // 1 critical  → max 60
+  // 2 criticals → max 48
+  // 3+ criticals → max 36 (floor)
+  if (summary.high >= 1) {
+    const cap = Math.max(36, 60 - (summary.high - 1) * 12)
+    score = Math.min(score, cap)
+  }
+
+  summary.score = score
 
   return summary
 }
@@ -114,7 +124,7 @@ export async function runScan(ctx: ScanContext): Promise<ScanReport> {
     SCAN_CONFIG.MAX_CONCURRENT_CHECKS
   )
 
-  const summary = computeSummary(results)
+  const summary = computeSummary(results, ctx.crawlStats)
 
   return {
     scanId: ctx.scanId,

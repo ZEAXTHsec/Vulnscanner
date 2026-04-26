@@ -19,14 +19,21 @@ export interface ScanResult {
   raw?: Record<string, unknown>
 }
 
+export interface CrawlStats {
+  pagesCrawled: number
+  endpointsTested: number
+  linksFound: number
+}
+
 export interface ScanContext {
   scanId: string
   url: string
   html: string
-  headers: Record<string, string>   // always lowercase keys
+  headers: Record<string, string>
   statusCode: number
   timestamp: string
-  stack: DetectedStack    // detected before checks run so prompts are stack-aware
+  stack: DetectedStack
+  crawlStats: CrawlStats
 }
 
 export interface ScanReport {
@@ -43,10 +50,11 @@ export interface ScanSummary {
   high: number
   medium: number
   low: number
-  passed: number   // scored checks that passed (high/medium/low severity)
-  info: number     // informational checks (severity: 'info') — don't affect score
+  passed: number
+  info: number
   skipped: number
-  score: number    // 0-100, higher = safer
+  score: number
+  crawlStats: CrawlStats
 }
 
 export interface Check {
