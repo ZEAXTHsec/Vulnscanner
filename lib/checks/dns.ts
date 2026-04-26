@@ -3,6 +3,7 @@
 // Generic header checks (X-Frame-Options, Referrer-Policy, etc.) live in headers.ts.
 
 import { Check, ScanContext, ScanResult } from '@/lib/types'
+import { serverVersionLeakPrompt } from '@/lib/utils/fix-prompts'
 
 export const dnsCheck: Check = {
   id: 'dns',
@@ -23,8 +24,9 @@ export const dnsCheck: Check = {
           name: 'Server Version Disclosed',
           severity: 'low',
           status: 'fail',
-          detail: `Server header reveals software/version: "${server}". Attackers use this to target known CVEs.`,
+          detail: `Server header reveals software/version: "${server}". Attackers use this to look up known CVEs for that exact version and craft targeted exploits.`,
           fix: 'Remove or genericize the Server header (e.g. ServerTokens Prod in Apache, server_tokens off in nginx).',
+          fixPrompt: serverVersionLeakPrompt(ctx.stack),
           score: 2,
         })
       } else {

@@ -4,6 +4,7 @@
 // Does NOT overlap with injection.ts (which covers eval/innerHTML/document.write).
 
 import { Check, ScanContext, ScanResult } from '@/lib/types'
+import { xssDomSinkPrompt } from '@/lib/utils/fix-prompts'
 
 interface XssSignal {
   pattern: RegExp
@@ -149,6 +150,7 @@ export const xssCheck: Check = {
         status: 'fail',
         detail: sig.detail,
         fix: 'Audit all DOM sinks. Never pass user-controlled data (URL params, hash, cookies) directly to HTML-injection sinks. Use textContent instead of innerHTML where possible, and validate postMessage origins.',
+        fixPrompt: xssDomSinkPrompt(ctx.stack),
         score: sig.score,
       })
     }

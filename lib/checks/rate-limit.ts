@@ -1,6 +1,7 @@
 // lib/checks/rate-limit.ts
 
 import { Check, ScanContext, ScanResult } from '@/lib/types'
+import { rateLimitPrompt } from '@/lib/utils/fix-prompts'
 
 export const rateLimitCheck: Check = {
   id: 'rate-limit',
@@ -52,8 +53,9 @@ export const rateLimitCheck: Check = {
         name: 'No Rate Limiting Headers',
         severity: 'medium',
         status: 'fail',
-        detail: 'No rate limiting headers found (X-RateLimit-Limit, Retry-After, etc). Login and API endpoints may be vulnerable to brute force.',
+        detail: 'No rate limiting headers found. Login and API endpoints may be vulnerable to brute force — an attacker can make thousands of password attempts per minute with no penalty.',
         fix: 'Implement rate limiting on login, signup, and API endpoints. Use Cloudflare, nginx limit_req, or middleware like express-rate-limit.',
+        fixPrompt: rateLimitPrompt(ctx.stack),
         score: 5,
       })
     }

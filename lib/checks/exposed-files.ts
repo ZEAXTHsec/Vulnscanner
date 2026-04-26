@@ -2,6 +2,7 @@
 
 import { Check, ScanContext, ScanResult } from '@/lib/types'
 import { fetchPath } from '@/lib/scanner/fetcher'
+import { exposedFilesHighPrompt, exposedFilesMediumPrompt } from '@/lib/utils/fix-prompts'
 
 const EXPOSED_FILE_PATHS: {
   path: string
@@ -167,8 +168,9 @@ export const exposedFilesCheck: Check = {
         name: 'Critical Files Exposed',
         severity: 'high',
         status: 'fail',
-        detail: `High-risk files accessible: ${highSeverity.map((e) => e.label).join(', ')}`,
-        fix: 'Block access to these files via .htaccess or nginx config. Delete any files not needed in production.',
+        detail: `High-risk files are publicly accessible: ${highSeverity.map((e) => e.label).join(', ')}. An attacker can download these right now to extract credentials, API keys, or source code.`,
+        fix: 'Block access to these files immediately via .htaccess or nginx config. Rotate any credentials that may have been exposed.',
+        fixPrompt: exposedFilesHighPrompt(ctx.stack),
         score: 10,
         raw: { exposed: highSeverity },
       })
@@ -180,8 +182,9 @@ export const exposedFilesCheck: Check = {
         name: 'Sensitive Files Accessible',
         severity: others[0].severity as 'medium' | 'low',
         status: 'fail',
-        detail: `Accessible files: ${others.map((e) => e.label).join(', ')}`,
-        fix: 'Restrict access to config and dependency files. These reveal your tech stack and dependencies to attackers.',
+        detail: `Accessible files: ${others.map((e) => e.label).join(', ')}. These reveal your dependency versions and tech stack, helping attackers identify known CVEs.`,
+        fix: 'Restrict access to config and dependency files via server config.',
+        fixPrompt: exposedFilesMediumPrompt(ctx.stack),
         score: 3,
         raw: { exposed: others },
       })

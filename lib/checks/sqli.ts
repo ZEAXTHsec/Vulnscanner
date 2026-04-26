@@ -3,6 +3,7 @@
 // SQL errors, raw query exposure, or unsafe input handling. Does NOT send payloads.
 
 import { Check, ScanContext, ScanResult } from '@/lib/types'
+import { sqliErrorLeakPrompt, sqliParamPrompt } from '@/lib/utils/fix-prompts'
 
 // SQL error messages leaked in page output
 const SQL_ERROR_PATTERNS: { pattern: RegExp; label: string }[] = [
@@ -50,8 +51,9 @@ export const sqliCheck: Check = {
         name: 'SQL Error Messages Exposed',
         severity: 'high',
         status: 'fail',
-        detail: `Database error message(s) found in page output: ${foundErrors.map((e) => e.label).join(', ')}. This confirms a SQL backend and reveals query structure to attackers.`,
+        detail: `Database error message(s) found in page output: ${foundErrors.map((e) => e.label).join(', ')}. This confirms a SQL backend and reveals query structure — an attacker can use these errors to map your schema and craft targeted injection payloads.`,
         fix: 'Disable detailed error output in production. Use generic error pages and log DB errors server-side only.',
+        fixPrompt: sqliErrorLeakPrompt(ctx.stack),
         score: 9,
       })
     }
@@ -82,8 +84,9 @@ export const sqliCheck: Check = {
           name: 'URL Parameters May Be DB-Bound',
           severity: 'low',
           status: 'fail',
-          detail: `Query parameters commonly passed to SQL queries found in URL: ${riskyParams.join(', ')}. These are worth testing manually with SQLi payloads.`,
+          detail: `Query parameters commonly passed to SQL queries found in URL: ${riskyParams.join(', ')}. These are worth testing manually with SQLi payloads like ' OR 1=1-- to confirm.`,
           fix: 'Use parameterised queries / prepared statements for all user-supplied inputs. Never interpolate URL params directly into SQL.',
+          fixPrompt: sqliParamPrompt(ctx.stack),
           score: 3,
         })
       }

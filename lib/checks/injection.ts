@@ -1,7 +1,7 @@
 // lib/checks/injection.ts
 
 import { Check, ScanContext, ScanResult } from '@/lib/types'
-import { cspMissingPrompt, cspWeakPrompt } from '@/lib/utils/fix-prompts'
+import { cspMissingPrompt, cspWeakPrompt, csrfPrompt } from '@/lib/utils/fix-prompts'
 
 export const injectionCheck: Check = {
   id: 'injection',
@@ -26,8 +26,9 @@ export const injectionCheck: Check = {
         name: 'CSRF Token Missing',
         severity: 'high',
         status: 'fail',
-        detail: `Found ${formMatches.length} form(s) with no detectable CSRF token. Forms may be vulnerable to cross-site request forgery.`,
+        detail: `Found ${formMatches.length} form(s) with no detectable CSRF token. An attacker can trick a logged-in user into submitting these forms from a malicious site — silently changing their email, password, or performing account actions.`,
         fix: 'Add CSRF tokens to all forms. Most frameworks (Laravel, Django, Rails) do this automatically.',
+        fixPrompt: csrfPrompt(ctx.stack),
         score: 8,
       })
     } else if (formMatches.length > 0) {

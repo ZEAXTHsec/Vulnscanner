@@ -89,3 +89,77 @@ export function spfMissingPrompt(stack: DetectedStack): string {
   const hint = stackHint(stack)
   return `My domain has no SPF record, so email receivers can't verify which servers are allowed to send mail from my domain. ${hint} Give me the exact DNS TXT record to add for SPF. How do I include my mail provider (e.g. Google Workspace, SendGrid, Mailgun)? What's the difference between ~all and -all?`
 }
+
+// ── SQL Injection ─────────────────────────────────────────────────────────────
+
+export function sqliErrorLeakPrompt(stack: DetectedStack): string {
+  const hint = stackHint(stack)
+  return `My website is leaking SQL error messages in its HTML output — this exposes my database type, table structure, and query logic to attackers. ${hint} Explain exactly what an attacker can learn from these errors, and show me how to: 1) disable detailed DB errors in production, 2) set up generic error pages, and 3) log DB errors server-side only. Give me the exact config changes for my stack.`
+}
+
+export function sqliParamPrompt(stack: DetectedStack): string {
+  const hint = stackHint(stack)
+  return `My URL has query parameters (like ?id=, ?user=, ?page=) that may be passed directly to SQL queries. ${hint} Explain what SQL injection is, how an attacker would exploit these parameters, and show me: 1) how to use parameterised queries / prepared statements for my stack, 2) how to validate and sanitise input, 3) how to test if my app is actually vulnerable. Give me code examples.`
+}
+
+// ── Open Redirect ─────────────────────────────────────────────────────────────
+
+export function openRedirectPrompt(stack: DetectedStack): string {
+  const hint = stackHint(stack)
+  return `My website has links with redirect parameters (like ?redirect=, ?next=, ?return_url=) pointing to external URLs. ${hint} Explain how attackers use open redirects for phishing — e.g. sending victims to evil.com via my trusted domain. Show me: 1) how to validate redirect destinations server-side with an allowlist, 2) how to detect and block off-domain redirects, 3) the exact code fix for my stack.`
+}
+
+// ── Server Version Leak ───────────────────────────────────────────────────────
+
+export function serverVersionLeakPrompt(stack: DetectedStack): string {
+  const hint = stackHint(stack)
+  const extra = stack.webserver === 'nginx'
+    ? ' Show the nginx.conf server_tokens off directive and where to place it.'
+    : stack.webserver === 'apache'
+    ? ' Show the Apache ServerTokens Prod and ServerSignature Off directives.'
+    : ''
+  return `My server header exposes the web server software and version number. ${hint}${extra} Explain why version disclosure helps attackers target CVEs. Show me how to suppress or genericise the Server header for my stack, and verify it's working.`
+}
+
+// ── Exposed Sensitive Files ───────────────────────────────────────────────────
+
+export function exposedFilesHighPrompt(stack: DetectedStack): string {
+  const hint = stackHint(stack)
+  return `Critical files are publicly accessible on my server — including potential .env files, .git directories, or database configs. ${hint} This is a serious breach risk. Show me: 1) how to immediately block access via nginx/Apache/.htaccess, 2) how to verify the files are no longer accessible, 3) how to rotate any credentials that may have been exposed, and 4) how to prevent this in future deployments. Give me exact config blocks.`
+}
+
+export function exposedFilesMediumPrompt(stack: DetectedStack): string {
+  const hint = stackHint(stack)
+  return `Dependency and config files (like package.json, composer.json, or Gemfile) are publicly accessible on my server. ${hint} Explain what attackers learn from these files (dependency versions, known CVEs), and show me how to block access to them via server config. Give me the exact rules for my stack.`
+}
+
+// ── Rate Limiting ─────────────────────────────────────────────────────────────
+
+export function rateLimitPrompt(stack: DetectedStack): string {
+  const hint = stackHint(stack)
+  const extra = stack.framework === 'nextjs'
+    ? ' Show me how to add rate limiting in Next.js API routes using the `rate-limiter-flexible` package or Upstash Redis.'
+    : stack.framework === 'express'
+    ? ' Show me how to add `express-rate-limit` middleware to protect login and API routes.'
+    : ''
+  return `My website has no rate limiting on login or API endpoints, leaving it vulnerable to brute force and credential stuffing attacks. ${hint}${extra} Explain the attack scenarios, and show me: 1) how to implement rate limiting, 2) how to add account lockout after failed attempts, 3) how to add Cloudflare Turnstile (free CAPTCHA) to the login form.`
+}
+
+// ── XSS ───────────────────────────────────────────────────────────────────────
+
+export function xssDomSinkPrompt(stack: DetectedStack): string {
+  const hint = stackHint(stack)
+  return `My page source contains DOM XSS sink patterns — code that can execute attacker-controlled JavaScript if URL parameters reach these sinks. ${hint} Explain DOM XSS: how an attacker crafts a URL to steal cookies or hijack sessions. Show me: 1) how to audit every DOM sink (innerHTML, outerHTML, document.write, eval), 2) how to use textContent instead of innerHTML, 3) how to add DOMPurify for any case where HTML must be inserted, and 4) how to test for DOM XSS with a browser devtools payload.`
+}
+
+// ── CSRF ─────────────────────────────────────────────────────────────────────
+
+export function csrfPrompt(stack: DetectedStack): string {
+  const hint = stackHint(stack)
+  const extra = stack.framework === 'nextjs'
+    ? ' Show me how to implement CSRF protection in Next.js API routes using the `csrf` package or SameSite cookies.'
+    : stack.framework === 'express'
+    ? ' Show me how to add `csurf` middleware to all form endpoints.'
+    : ''
+  return `My website has forms without CSRF tokens, making them vulnerable to cross-site request forgery. ${hint}${extra} Explain how CSRF attacks work — e.g. a malicious site silently submitting a form as a logged-in user. Show me how to add CSRF tokens to all forms and verify them server-side.`
+}

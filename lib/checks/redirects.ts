@@ -1,6 +1,7 @@
 // lib/checks/redirects.ts
 
 import { Check, ScanContext, ScanResult } from '@/lib/types'
+import { openRedirectPrompt } from '@/lib/utils/fix-prompts'
 
 const OPEN_REDIRECT_PARAMS = [
   'redirect', 'redirect_to', 'redirect_uri', 'return', 'returnTo',
@@ -37,8 +38,9 @@ export const redirectsCheck: Check = {
         name: 'Potential Open Redirect',
         severity: 'medium',
         status: 'fail',
-        detail: `Found ${suspiciousLinks.length} link(s) with redirect parameters pointing to external URLs. Could be used for phishing.`,
+        detail: `Found ${suspiciousLinks.length} link(s) with redirect parameters pointing to external URLs. Attackers use this to send victims to phishing pages via your trusted domain — e.g. yourdomain.com?redirect=evil.com.`,
         fix: 'Validate redirect destinations server-side. Use an allowlist of permitted redirect URLs.',
+        fixPrompt: openRedirectPrompt(ctx.stack),
         score: 5,
         raw: { examples: suspiciousLinks.slice(0, 3) },
       })

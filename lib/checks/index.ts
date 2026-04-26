@@ -24,8 +24,7 @@ import { infrastructureCheck } from './infrastructure'
 import { mixedContentCheck } from './mixed-content'
 import { emailSecurityCheck } from './email-security'
 import { subdomainTakeoverCheck } from './subdomain-takeover'
-// Note: sqli.ts exists but is not wired in — SQL injection detection
-// is covered by injectionCheck and xssCheck. Remove sqli.ts if not needed.
+import { sqliCheck } from './sqli'
 
 export const checks: Check[] = [
   httpsCheck,
@@ -38,6 +37,7 @@ export const checks: Check[] = [
   corsCheck,
   injectionCheck,
   xssCheck,
+  sqliCheck,
   exposedFilesCheck,
   techDetectCheck,
   openDirsCheck,
