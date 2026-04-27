@@ -35,39 +35,39 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
           :root {
             --bg:            #060b18;
-            --bg-card:       #0a1020;
-            --bg-elevated:   #0e1628;
-            --bg-hover:      #121d34;
-            --border:        rgba(100,140,220,0.08);
-            --border-mid:    rgba(100,140,220,0.13);
-            --border-bright: rgba(100,140,220,0.24);
-            --text:          #e8eef8;
-            --text-sub:      #8096b8;
-            --text-muted:    #4a5f7a;
-            --text-dim:      #1e2d48;
+            --bg-card:       #0b1122;
+            --bg-elevated:   #101828;
+            --bg-hover:      #141f36;
+            --border:        rgba(100,140,220,0.12);
+            --border-mid:    rgba(100,140,220,0.20);
+            --border-bright: rgba(100,140,220,0.35);
+            --text:          #edf2fc;
+            --text-sub:      #92aacf;
+            --text-muted:    #566d8c;
+            --text-dim:      #243350;
             --accent:        #00d4aa;
             --accent-2:      #3b9eff;
-            --accent-dim:    rgba(0,212,170,0.07);
-            --accent-glow:   rgba(0,212,170,0.20);
+            --accent-dim:    rgba(0,212,170,0.10);
+            --accent-glow:   rgba(0,212,170,0.25);
             --blue:          #4da6ff;
-            --blue-dim:      rgba(77,166,255,0.09);
+            --blue-dim:      rgba(77,166,255,0.12);
             --red:           #ff4d6a;
-            --red-dim:       rgba(255,77,106,0.09);
+            --red-dim:       rgba(255,77,106,0.12);
             --orange:        #ff8c42;
-            --orange-dim:    rgba(255,140,66,0.09);
+            --orange-dim:    rgba(255,140,66,0.12);
             --yellow:        #ffc94d;
-            --yellow-dim:    rgba(255,201,77,0.09);
+            --yellow-dim:    rgba(255,201,77,0.12);
             --font-ui:       'DM Sans', -apple-system, sans-serif;
             --font-mono:     'JetBrains Mono', 'Fira Code', monospace;
-            --radius:        10px;
-            --radius-lg:     16px;
-            --radius-xl:     22px;
-            --shadow-card:   0 2px 20px rgba(0,0,0,0.5), 0 1px 4px rgba(0,0,0,0.3);
-            --shadow-glow:   0 0 32px rgba(0,212,170,0.14);
+            --radius:        12px;
+            --radius-lg:     18px;
+            --radius-xl:     24px;
+            --shadow-card:   0 4px 32px rgba(0,0,0,0.6), 0 1px 6px rgba(0,0,0,0.4);
+            --shadow-glow:   0 0 40px rgba(0,212,170,0.18);
           }
 
           html {
-            font-size: 16px;
+            font-size: 17px;
             -webkit-font-smoothing: antialiased;
             text-rendering: optimizeLegibility;
           }
@@ -75,15 +75,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           body {
             background: var(--bg);
             background-image:
-              radial-gradient(ellipse 80% 50% at 50% -10%, rgba(0,100,200,0.13) 0%, transparent 60%),
-              linear-gradient(rgba(100,140,220,0.022) 1px, transparent 1px),
-              linear-gradient(90deg, rgba(100,140,220,0.022) 1px, transparent 1px);
-            background-size: auto, 52px 52px, 52px 52px;
+              radial-gradient(ellipse 90% 55% at 50% -8%, rgba(0,110,220,0.18) 0%, transparent 65%),
+              linear-gradient(rgba(100,140,220,0.04) 1px, transparent 1px),
+              linear-gradient(90deg, rgba(100,140,220,0.04) 1px, transparent 1px);
+            background-size: auto, 48px 48px, 48px 48px;
             color: var(--text);
             font-family: var(--font-ui);
             font-size: 1rem;
             font-weight: 400;
-            line-height: 1.65;
+            line-height: 1.7;
             min-height: 100vh;
           }
 

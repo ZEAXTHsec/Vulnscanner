@@ -11,7 +11,7 @@ function scoreLabel(s: number) { return s >= 80 ? 'Secure' : s >= 50 ? 'Fair' : 
 function scoreGrade(s: number) { return s >= 90 ? 'A' : s >= 80 ? 'B' : s >= 65 ? 'C' : s >= 50 ? 'D' : 'F' }
 
 const RadioSVG = () => (
-  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <circle cx="12" cy="12" r="2"/>
     <path d="M16.24 7.76a6 6 0 010 8.49m-8.48-.01a6 6 0 010-8.49m11.31-2.82a10 10 0 010 14.14m-14.14 0a10 10 0 010-14.14"/>
   </svg>
@@ -19,15 +19,15 @@ const RadioSVG = () => (
 
 function AnimatedScoreRing({ score }: { score: number }) {
   const color = scoreColorRaw(score)
-  const r = 42
+  const r = 52
   const circ = 2 * Math.PI * r
   const fill = (score / 100) * circ
 
   return (
-    <svg width="108" height="108" style={{ transform: 'rotate(-90deg)', display: 'block' }}>
+    <svg width="132" height="132" style={{ transform: 'rotate(-90deg)', display: 'block' }}>
       <defs>
         <filter id="ringGlow" x="-50%" y="-50%" width="200%" height="200%">
-          <feGaussianBlur stdDeviation="3.5" result="blur"/>
+          <feGaussianBlur stdDeviation="4" result="blur"/>
           <feMerge>
             <feMergeNode in="blur"/>
             <feMergeNode in="SourceGraphic"/>
@@ -40,17 +40,17 @@ function AnimatedScoreRing({ score }: { score: number }) {
       </defs>
       {/* Track */}
       <circle
-        cx="54" cy="54" r={r}
+        cx="66" cy="66" r={r}
         fill="none"
-        stroke="rgba(100,140,220,0.07)"
-        strokeWidth="8"
+        stroke="rgba(100,140,220,0.09)"
+        strokeWidth="10"
       />
-      {/* Fill — animated via CSS */}
+      {/* Fill */}
       <circle
-        cx="54" cy="54" r={r}
+        cx="66" cy="66" r={r}
         fill="none"
-        stroke={`url(#ringGrad)`}
-        strokeWidth="8"
+        stroke="url(#ringGrad)"
+        strokeWidth="10"
         strokeDasharray={`${fill} ${circ}`}
         strokeLinecap="round"
         filter="url(#ringGlow)"
@@ -64,21 +64,10 @@ function AnimatedScoreRing({ score }: { score: number }) {
 }
 
 function StatCard({
-  label,
-  value,
-  color,
-  bg,
-  border,
-  delay,
-  icon,
+  label, value, color, bg, border, delay, icon,
 }: {
-  label: string
-  value: number
-  color: string
-  bg: string
-  border: string
-  delay: number
-  icon: string
+  label: string; value: number; color: string; bg: string;
+  border: string; delay: number; icon: string
 }) {
   const ref = useRef<HTMLDivElement>(null)
 
@@ -110,11 +99,11 @@ function StatCard({
         background: 'var(--bg-card)',
         border: `1px solid ${border}`,
         borderRadius: 'var(--radius-lg)',
-        padding: '18px 20px',
+        padding: '22px 24px',
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'space-between',
-        minWidth: '82px',
+        minWidth: '90px',
         flex: '1',
         position: 'relative',
         overflow: 'hidden',
@@ -127,8 +116,7 @@ function StatCard({
     >
       {/* Glow wash */}
       <div style={{
-        position: 'absolute',
-        inset: 0,
+        position: 'absolute', inset: 0,
         background: `radial-gradient(ellipse at 50% 0%, ${bg} 0%, transparent 65%)`,
         pointerEvents: 'none',
         opacity: value > 0 ? 1 : 0.4,
@@ -136,9 +124,7 @@ function StatCard({
 
       {/* Top accent line */}
       <div style={{
-        position: 'absolute',
-        top: 0, left: 0, right: 0,
-        height: '2px',
+        position: 'absolute', top: 0, left: 0, right: 0, height: '2px',
         background: value > 0
           ? `linear-gradient(90deg, ${color}00 0%, ${color} 50%, ${color}00 100%)`
           : 'transparent',
@@ -146,10 +132,10 @@ function StatCard({
       }} />
 
       <div style={{ position: 'relative' }}>
-        <div style={{ fontSize: '1.1rem', marginBottom: '8px', opacity: 0.75 }}>{icon}</div>
+        <div style={{ fontSize: '1.25rem', marginBottom: '10px', opacity: 0.8 }}>{icon}</div>
         <div style={{
           fontFamily: 'var(--font-mono)',
-          fontSize: '2rem',
+          fontSize: '2.3rem',
           fontWeight: 600,
           color: value > 0 ? color : 'var(--text-dim)',
           lineHeight: 1,
@@ -158,9 +144,9 @@ function StatCard({
           animationDelay: `${delay + 100}ms`,
         }}>{value}</div>
         <div style={{
-          fontSize: '0.72rem',
+          fontSize: '0.76rem',
           color: 'var(--text-muted)',
-          marginTop: '6px',
+          marginTop: '8px',
           fontWeight: 600,
           letterSpacing: '0.06em',
           textTransform: 'uppercase',
@@ -208,15 +194,15 @@ export default function SummaryCards({ summary, url, timestamp }: Props) {
         }
       `}</style>
 
-      <div style={{ marginBottom: '1.8rem' }}>
+      <div style={{ marginBottom: '2rem' }}>
 
         {/* URL bar */}
         <div style={{
           display: 'flex',
           alignItems: 'center',
-          gap: '10px',
-          padding: '10px 18px',
-          marginBottom: '14px',
+          gap: '12px',
+          padding: '13px 20px',
+          marginBottom: '16px',
           background: 'var(--bg-card)',
           border: '1px solid var(--border-mid)',
           borderRadius: 'var(--radius)',
@@ -227,7 +213,7 @@ export default function SummaryCards({ summary, url, timestamp }: Props) {
           </span>
           <span style={{
             fontFamily: 'var(--font-mono)',
-            fontSize: '0.82rem',
+            fontSize: '0.88rem',
             color: 'var(--accent)',
             fontWeight: 500,
             overflow: 'hidden',
@@ -236,7 +222,7 @@ export default function SummaryCards({ summary, url, timestamp }: Props) {
           }}>{url}</span>
           <span style={{
             marginLeft: 'auto',
-            fontSize: '0.72rem',
+            fontSize: '0.76rem',
             color: 'var(--text-muted)',
             fontFamily: 'var(--font-mono)',
             flexShrink: 0,
@@ -246,7 +232,7 @@ export default function SummaryCards({ summary, url, timestamp }: Props) {
         </div>
 
         {/* Cards row */}
-        <div style={{ display: 'flex', gap: '10px', alignItems: 'stretch', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: '12px', alignItems: 'stretch', flexWrap: 'wrap' }}>
 
           {/* Score card */}
           <div
@@ -255,11 +241,11 @@ export default function SummaryCards({ summary, url, timestamp }: Props) {
               background: 'var(--bg-card)',
               border: '1px solid var(--border-mid)',
               borderRadius: 'var(--radius-lg)',
-              padding: '22px 28px',
+              padding: '26px 32px',
               display: 'flex',
               alignItems: 'center',
-              gap: '20px',
-              minWidth: '230px',
+              gap: '24px',
+              minWidth: '256px',
               position: 'relative',
               overflow: 'hidden',
               boxShadow: 'var(--shadow-card)',
@@ -270,17 +256,14 @@ export default function SummaryCards({ summary, url, timestamp }: Props) {
           >
             {/* Background glow */}
             <div style={{
-              position: 'absolute',
-              inset: 0,
+              position: 'absolute', inset: 0,
               background: `radial-gradient(ellipse at 70% 50%, ${colorRaw}09 0%, transparent 65%)`,
               pointerEvents: 'none',
             }} />
 
             {/* Top gradient line */}
             <div style={{
-              position: 'absolute',
-              top: 0, left: 0, right: 0,
-              height: '2px',
+              position: 'absolute', top: 0, left: 0, right: 0, height: '2px',
               background: `linear-gradient(90deg, transparent 0%, ${colorRaw} 50%, transparent 100%)`,
               opacity: 0.7,
             }} />
@@ -289,16 +272,13 @@ export default function SummaryCards({ summary, url, timestamp }: Props) {
             <div style={{ position: 'relative', flexShrink: 0 }}>
               <AnimatedScoreRing score={summary.score} />
               <div style={{
-                position: 'absolute',
-                inset: 0,
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
+                position: 'absolute', inset: 0,
+                display: 'flex', flexDirection: 'column',
+                alignItems: 'center', justifyContent: 'center',
               }}>
                 <span style={{
                   fontFamily: 'var(--font-mono)',
-                  fontSize: '1.6rem',
+                  fontSize: '1.9rem',
                   fontWeight: 700,
                   color,
                   lineHeight: 1,
@@ -306,7 +286,7 @@ export default function SummaryCards({ summary, url, timestamp }: Props) {
                 }}>
                   {summary.score}
                 </span>
-                <span style={{ fontSize: '0.58rem', color: 'var(--text-muted)', marginTop: '2px', fontFamily: 'var(--font-mono)' }}>
+                <span style={{ fontSize: '0.64rem', color: 'var(--text-muted)', marginTop: '3px', fontFamily: 'var(--font-mono)' }}>
                   /100
                 </span>
               </div>
@@ -316,7 +296,7 @@ export default function SummaryCards({ summary, url, timestamp }: Props) {
             <div style={{ position: 'relative' }}>
               <div style={{
                 fontWeight: 700,
-                fontSize: '1rem',
+                fontSize: '1.1rem',
                 color: 'var(--text)',
                 letterSpacing: '-0.025em',
                 lineHeight: 1.2,
@@ -326,19 +306,19 @@ export default function SummaryCards({ summary, url, timestamp }: Props) {
 
               {/* Grade badge */}
               <div style={{
-                marginTop: '8px',
+                marginTop: '10px',
                 display: 'inline-flex',
                 alignItems: 'center',
-                gap: '8px',
+                gap: '10px',
               }}>
                 <span style={{
                   display: 'inline-flex',
                   alignItems: 'center',
-                  padding: '3px 12px',
+                  padding: '4px 14px',
                   background: `${colorRaw}16`,
                   border: `1px solid ${colorRaw}30`,
                   borderRadius: '999px',
-                  fontSize: '0.7rem',
+                  fontSize: '0.76rem',
                   fontWeight: 700,
                   color,
                   letterSpacing: '0.06em',
@@ -346,7 +326,7 @@ export default function SummaryCards({ summary, url, timestamp }: Props) {
                 }}>{label}</span>
                 <span style={{
                   fontFamily: 'var(--font-mono)',
-                  fontSize: '1rem',
+                  fontSize: '1.1rem',
                   fontWeight: 700,
                   color,
                   opacity: 0.7,
