@@ -104,7 +104,6 @@ export const subdomainTakeoverCheck: Check = {
       if (riskyTarget) {
         // Only flag as high if we also got a fingerprint match — otherwise medium signal
         const severity = matched.length > 0 ? 'high' : 'medium'
-        const score = matched.length > 0 ? 9 : 6
 
         results.push({
           checkId: 'takeover-cname-risky',
@@ -113,7 +112,6 @@ export const subdomainTakeoverCheck: Check = {
           status: 'fail',
           detail: `${hostname} has a CNAME record pointing to "${cname}" (${riskyTarget}). If the corresponding resource on that service is unclaimed, an attacker could register it and serve content from your domain.`,
           fix: 'Verify the target resource is actively claimed under your account. If the service is no longer used, remove the CNAME from DNS.',
-          score,
         })
       } else {
         results.push({
