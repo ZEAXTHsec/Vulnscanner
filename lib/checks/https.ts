@@ -18,7 +18,6 @@ export const httpsCheck: Check = {
         status: 'fail',
         detail: 'Site is served over HTTP. All data in transit is unencrypted and can be intercepted.',
         fix: 'Redirect all HTTP traffic to HTTPS and obtain a TLS certificate (free via Let\'s Encrypt).',
-        score: 9,
       }]
     }
 
@@ -28,7 +27,6 @@ export const httpsCheck: Check = {
       severity: 'info',
       status: 'pass',
       detail: 'Site is served over HTTPS.',
-      score: 0,
     }]
   },
 }

@@ -27,7 +27,6 @@ export const dnsCheck: Check = {
           detail: `Server header reveals software/version: "${server}". Attackers use this to look up known CVEs for that exact version and craft targeted exploits.`,
           fix: 'Remove or genericize the Server header (e.g. ServerTokens Prod in Apache, server_tokens off in nginx).',
           fixPrompt: serverVersionLeakPrompt(ctx.stack),
-          score: 2,
         })
       } else {
         results.push({
@@ -36,7 +35,6 @@ export const dnsCheck: Check = {
           severity: 'info',
           status: 'pass',
           detail: `Server header present but does not leak version info: "${server}".`,
-          score: 0,
         })
       }
     }

@@ -28,7 +28,6 @@ export const robotsCheck: Check = {
         status: 'fail',
         detail: 'No robots.txt found. Search engines and crawlers have no guidance on what not to index.',
         fix: 'Create a /robots.txt file. At minimum: User-agent: * Disallow: /admin/',
-        score: 1,
       })
     } else {
       // Check if robots.txt leaks sensitive paths via Disallow
@@ -50,7 +49,6 @@ export const robotsCheck: Check = {
           status: 'fail',
           detail: `robots.txt Disallow entries reveal ${sensitiveLeaks.length} sensitive path(s): ${sensitiveLeaks.slice(0, 3).map((l) => l.replace(/^Disallow:\s*/i, '')).join(', ')}`,
           fix: 'Remove sensitive paths from robots.txt — Disallow does not protect them, it only advertises them to attackers.',
-          score: 4,
         })
       } else {
         results.push({
@@ -59,7 +57,6 @@ export const robotsCheck: Check = {
           severity: 'info',
           status: 'pass',
           detail: `robots.txt present with ${disallowLines.length} Disallow rule(s). No obvious sensitive path leaks.`,
-          score: 0,
         })
       }
 
@@ -72,7 +69,6 @@ export const robotsCheck: Check = {
           severity: 'info',
           status: 'pass',
           detail: 'robots.txt references a sitemap — good for SEO and crawler guidance.',
-          score: 0,
         })
       }
     }
@@ -94,7 +90,6 @@ export const robotsCheck: Check = {
               status: 'fail',
               detail: `Sitemap references ${stagingUrls.length} staging/dev URL(s). These environments may have weaker security.`,
               fix: 'Remove staging and dev URLs from your production sitemap.',
-              score: 4,
             })
           }
           break
@@ -109,7 +104,6 @@ export const robotsCheck: Check = {
         severity: 'info',
         status: 'pass',
         detail: 'No sitemap.xml found — not a security issue, but may affect SEO.',
-        score: 0,
       })
     }
 

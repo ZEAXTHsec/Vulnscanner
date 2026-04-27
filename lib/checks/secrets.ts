@@ -44,7 +44,6 @@ export const secretsCheck: Check = {
         severity: 'info',
         status: 'pass',
         detail: 'No API keys, tokens, or secrets detected in page source.',
-        score: 0,
       }]
     }
 
@@ -58,7 +57,6 @@ export const secretsCheck: Check = {
       status: 'fail',
       detail: `Found ${found.length} potential secret(s) in page source: ${labels}.`,
       fix: 'Move all secrets to environment variables. Never hardcode keys in frontend code. Rotate any exposed keys immediately.',
-      score: highCount > 0 ? 10 : 6,
       raw: { found },
     }]
   },

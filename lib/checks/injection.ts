@@ -29,7 +29,6 @@ export const injectionCheck: Check = {
         detail: `Found ${formMatches.length} form(s) with no detectable CSRF token. An attacker can trick a logged-in user into submitting these forms from a malicious site — silently changing their email, password, or performing account actions.`,
         fix: 'Add CSRF tokens to all forms. Most frameworks (Laravel, Django, Rails) do this automatically.',
         fixPrompt: csrfPrompt(ctx.stack),
-        score: 8,
       })
     } else if (formMatches.length > 0) {
       results.push({
@@ -38,7 +37,6 @@ export const injectionCheck: Check = {
         severity: 'info',
         status: 'pass',
         detail: `Found ${formMatches.length} form(s) with CSRF token signals detected.`,
-        score: 0,
       })
     }
 
@@ -62,7 +60,6 @@ export const injectionCheck: Check = {
         status: 'fail',
         detail: `Detected potentially unsafe JS: ${found.join(', ')}. These can enable XSS if user input reaches them.`,
         fix: 'Replace innerHTML with textContent, avoid eval(), use DOMPurify to sanitize any user-supplied HTML.',
-        score: 5,
       })
     } else {
       results.push({
@@ -71,7 +68,6 @@ export const injectionCheck: Check = {
         severity: 'info',
         status: 'pass',
         detail: 'No high-risk JS patterns (eval, innerHTML, document.write) found in page source.',
-        score: 0,
       })
     }
 
@@ -86,7 +82,6 @@ export const injectionCheck: Check = {
         detail: 'No CSP header found. Without CSP, XSS attacks have no browser-level mitigation.',
         fix: "Add a Content-Security-Policy header. Start with: Content-Security-Policy: default-src 'self'",
         fixPrompt: cspMissingPrompt(ctx.stack),
-        score: 5,
       })
     } else {
       const isWeak = csp.includes("'unsafe-inline'") || csp.includes("'unsafe-eval'")
@@ -99,7 +94,6 @@ export const injectionCheck: Check = {
           detail: "CSP contains 'unsafe-inline' or 'unsafe-eval' — these defeat much of CSP's protection.",
           fix: "Remove 'unsafe-inline' and 'unsafe-eval'. Use nonces or hashes for inline scripts instead.",
           fixPrompt: cspWeakPrompt(ctx.stack),
-          score: 4,
         })
       } else {
         results.push({
@@ -108,7 +102,6 @@ export const injectionCheck: Check = {
           severity: 'info',
           status: 'pass',
           detail: 'CSP header present with no obviously weak directives.',
-          score: 0,
         })
       }
     }

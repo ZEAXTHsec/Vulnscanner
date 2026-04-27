@@ -51,7 +51,7 @@ export const sqliCheck: Check = {
         name: 'SQL Error Messages Exposed',
         severity: 'high',
         status: 'fail',
-        detail: `[Passive scan — no payloads sent] Database error message(s) found in page output: ${foundErrors.map((e) => e.label).join(', ')}. This confirms a SQL backend and reveals query structure — an attacker can use these errors to map your schema and craft targeted injection payloads.`,
+        detail: `Database error message(s) found in page output: ${foundErrors.map((e) => e.label).join(', ')}. This confirms a SQL backend and reveals query structure — an attacker can use these errors to map your schema and craft targeted injection payloads.`,
         fix: 'Disable detailed error output in production. Use generic error pages and log DB errors server-side only.',
         fixPrompt: sqliErrorLeakPrompt(ctx.stack),
       })
@@ -65,7 +65,7 @@ export const sqliCheck: Check = {
         name: 'Raw SQL Visible in Page Source',
         severity: 'high',
         status: 'fail',
-        detail: `[Passive scan — no payloads sent] SQL statement patterns found in page HTML: ${foundExposed.map((e) => e.label).join(', ')}. Queries may be leaking through debug output or template rendering.`,
+        detail: `SQL statement patterns found in page HTML: ${foundExposed.map((e) => e.label).join(', ')}. Queries may be leaking through debug output or template rendering.`,
         fix: 'Remove all debug/query output from production. Ensure no ORM debug mode is active.',
       })
     }
@@ -82,7 +82,7 @@ export const sqliCheck: Check = {
           name: 'URL Parameters May Be DB-Bound',
           severity: 'low',
           status: 'fail',
-          detail: `[Passive scan — no payloads sent] Query parameters commonly passed to SQL queries found in URL: ${riskyParams.join(', ')}. These are worth testing manually with SQLi payloads like \' OR 1=1-- to confirm.`,
+          detail: `Query parameters commonly passed to SQL queries found in URL: ${riskyParams.join(', ')}. These are worth testing manually with SQLi payloads like ' OR 1=1-- to confirm.`,
           fix: 'Use parameterised queries / prepared statements for all user-supplied inputs. Never interpolate URL params directly into SQL.',
           fixPrompt: sqliParamPrompt(ctx.stack),
         })
@@ -98,7 +98,7 @@ export const sqliCheck: Check = {
         name: 'Numeric ID Fields in Forms',
         severity: 'low',
         status: 'fail',
-        detail: `[Passive scan — no payloads sent] Found ${numericInputs.length} form field(s) with numeric ID-style values (name=id/user/item). These are common SQLi targets if not parameterised.`,
+        detail: `Found ${numericInputs.length} form field(s) with numeric ID-style values (name=id/user/item). These are common SQLi targets if not parameterised.`,
         fix: 'Ensure all form inputs are processed with parameterised queries. Consider UUIDs instead of sequential integer IDs.',
       })
     }

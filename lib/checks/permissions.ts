@@ -23,7 +23,6 @@ export const permissionsCheck: Check = {
         detail: 'No Permissions-Policy header. Browser features like camera, microphone, and geolocation are unrestricted.',
         fix: 'Add: Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()',
         fixPrompt: permissionsPolicyPrompt(ctx.stack),
-        score: 2,
       })
     } else {
       results.push({
@@ -32,7 +31,6 @@ export const permissionsCheck: Check = {
         severity: 'info',
         status: 'pass',
         detail: `Permissions-Policy header found: ${pp.slice(0, 80)}${pp.length > 80 ? '…' : ''}`,
-        score: 0,
       })
     }
 
@@ -48,7 +46,6 @@ export const permissionsCheck: Check = {
         status: 'fail',
         detail: 'No Cache-Control header. Sensitive pages may be cached by browsers or proxies.',
         fix: 'Add: Cache-Control: no-store for pages with sensitive data.',
-        score: 1,
       })
     } else {
       results.push({
@@ -57,7 +54,6 @@ export const permissionsCheck: Check = {
         severity: 'info',
         status: 'pass',
         detail: `Cache-Control: ${cacheControl}`,
-        score: 0,
       })
     }
 

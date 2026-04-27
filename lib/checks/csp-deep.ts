@@ -43,7 +43,6 @@ export const cspDeepCheck: Check = {
         status: 'fail',
         detail: `CSP uses overly broad sources in: ${wildcardDirs.map((d) => d.name).join(', ')}. Wildcards defeat the purpose of CSP.`,
         fix: "Replace wildcard sources with specific trusted domains. Avoid 'https:' as a source — it allows any HTTPS origin.",
-        score: 5,
       })
     }
 
@@ -56,7 +55,6 @@ export const cspDeepCheck: Check = {
         status: 'fail',
         detail: "CSP has no default-src or script-src directive. Unlisted resource types fall back to allow-all.",
         fix: "Add default-src 'self' as a catch-all baseline in your CSP.",
-        score: 4,
       })
     }
 
@@ -70,7 +68,6 @@ export const cspDeepCheck: Check = {
         status: 'fail',
         detail: `data: URI allowed in: ${dataSrcDirs.map((d) => d.name).join(', ')}. Enables base64-encoded script injection.`,
         fix: "Remove data: from script-src. Only allow data: in img-src if absolutely necessary.",
-        score: 4,
       })
     }
 
@@ -85,7 +82,6 @@ export const cspDeepCheck: Check = {
         severity: 'info',
         status: 'pass',
         detail: "CSP uses nonces or hashes instead of 'unsafe-inline' — best practice.",
-        score: 0,
       })
     }
 
@@ -98,7 +94,6 @@ export const cspDeepCheck: Check = {
         status: 'fail',
         detail: 'CSP does not include upgrade-insecure-requests. HTTP sub-resources may not be auto-upgraded to HTTPS.',
         fix: 'Add upgrade-insecure-requests to your CSP to automatically upgrade HTTP resources to HTTPS.',
-        score: 1,
       })
     }
 
@@ -111,7 +106,6 @@ export const cspDeepCheck: Check = {
         status: 'fail',
         detail: 'Neither block-all-mixed-content nor upgrade-insecure-requests in CSP.',
         fix: 'Add either upgrade-insecure-requests or block-all-mixed-content to your CSP.',
-        score: 1,
       })
     }
 
@@ -122,7 +116,6 @@ export const cspDeepCheck: Check = {
         severity: 'info',
         status: 'pass',
         detail: 'CSP deep analysis passed — no obvious weaknesses found.',
-        score: 0,
       })
     }
 

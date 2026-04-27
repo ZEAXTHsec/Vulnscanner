@@ -18,7 +18,6 @@ export const cookiesCheck: Check = {
         severity: 'info',
         status: 'pass',
         detail: 'No Set-Cookie headers found on this page.',
-        score: 0,
       })
       return results
     }
@@ -52,7 +51,6 @@ export const cookiesCheck: Check = {
         severity: 'info',
         status: 'pass',
         detail: `All ${cookieList.length} cookie(s) have Secure, HttpOnly, and SameSite set.`,
-        score: 0,
       })
       return results
     }
@@ -69,7 +67,6 @@ export const cookiesCheck: Check = {
         status: 'fail',
         detail: secureIssues.slice(0, 3).join('; ') + (secureIssues.length > 3 ? ` (+${secureIssues.length - 3} more)` : ''),
         fix: 'Set Secure and HttpOnly on all cookies. Example: Set-Cookie: session=abc; Secure; HttpOnly; SameSite=Strict',
-        score: 7,
       })
     }
 
@@ -81,7 +78,6 @@ export const cookiesCheck: Check = {
         status: 'fail',
         detail: `${sameSiteIssues.length} cookie(s) missing SameSite attribute — vulnerable to CSRF via cross-site requests.`,
         fix: 'Add SameSite=Strict or SameSite=Lax to all cookies. Strict is most secure.',
-        score: 4,
       })
     }
 
@@ -92,7 +88,6 @@ export const cookiesCheck: Check = {
         severity: 'info',
         status: 'pass',
         detail: `Cookie(s) with all flags set correctly: ${passed.join(', ')}`,
-        score: 0,
       })
     }
 

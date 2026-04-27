@@ -68,7 +68,6 @@ export const emailSecurityCheck: Check = {
         detail: `No SPF TXT record found for ${domain}. Without SPF, anyone can send email appearing to come from your domain.`,
         fix: 'Add a DNS TXT record: v=spf1 include:_spf.yourmailprovider.com ~all',
         fixPrompt: spfMissingPrompt(ctx.stack),
-        score: 6,
       })
     } else {
       const isAllowAll = /\+all\b/.test(spfRecord) || /\ball\b/.test(spfRecord) && !/[~\-]all/.test(spfRecord)
@@ -83,7 +82,6 @@ export const emailSecurityCheck: Check = {
           status: 'fail',
           detail: `SPF record ends with "+all" — any server can send mail as ${domain}. SPF is effectively disabled.`,
           fix: 'Change to end with "-all" (hard fail) or "~all" (soft fail).',
-          score: 8,
         })
       } else if (isHardFail) {
         results.push({
@@ -92,7 +90,6 @@ export const emailSecurityCheck: Check = {
           severity: 'info',
           status: 'pass',
           detail: `SPF configured with hard fail: "${spfRecord}"`,
-          score: 0,
         })
       } else if (isSoftFail) {
         results.push({
@@ -102,7 +99,6 @@ export const emailSecurityCheck: Check = {
           status: 'fail',
           detail: `SPF uses "~all" (soft fail). Unauthorized senders are marked suspicious but not rejected.`,
           fix: 'Consider upgrading to "-all" once all legitimate senders are listed.',
-          score: 2,
         })
       } else {
         results.push({
@@ -111,7 +107,6 @@ export const emailSecurityCheck: Check = {
           severity: 'info',
           status: 'pass',
           detail: `SPF record found: "${spfRecord}"`,
-          score: 0,
         })
       }
     }
@@ -128,7 +123,6 @@ export const emailSecurityCheck: Check = {
         detail: `No DMARC record at _dmarc.${domain}. Receiving servers have no policy for SPF/DKIM failures — your domain can be spoofed.`,
         fix: 'Add a TXT record at _dmarc.' + domain + ': v=DMARC1; p=quarantine; rua=mailto:dmarc@' + domain,
         fixPrompt: dmarcMissingPrompt(ctx.stack),
-        score: 7,
       })
     } else {
       const policyMatch = dmarcRecord.match(/p=(none|quarantine|reject)/i)
@@ -142,7 +136,6 @@ export const emailSecurityCheck: Check = {
           status: 'fail',
           detail: `DMARC found but policy is "p=none" — only monitors, does not block spoofed emails.`,
           fix: 'Upgrade to p=quarantine or p=reject after reviewing rua reports.',
-          score: 5,
         })
       } else if (policy === 'quarantine') {
         results.push({
@@ -152,7 +145,6 @@ export const emailSecurityCheck: Check = {
           status: 'fail',
           detail: `DMARC set to "p=quarantine". Spoofed emails go to spam rather than being rejected outright.`,
           fix: 'Upgrade to p=reject for full enforcement once SPF/DKIM are stable.',
-          score: 2,
         })
       } else if (policy === 'reject') {
         results.push({
@@ -161,7 +153,6 @@ export const emailSecurityCheck: Check = {
           severity: 'info',
           status: 'pass',
           detail: `DMARC configured with p=reject — spoofed emails are rejected outright.`,
-          score: 0,
         })
       } else {
         results.push({
@@ -170,7 +161,6 @@ export const emailSecurityCheck: Check = {
           severity: 'info',
           status: 'pass',
           detail: `DMARC record: "${dmarcRecord}"`,
-          score: 0,
         })
       }
 
@@ -182,7 +172,6 @@ export const emailSecurityCheck: Check = {
           status: 'fail',
           detail: 'No rua= URI in DMARC record — you won\'t receive spoofing/failure reports.',
           fix: 'Add rua=mailto:dmarc@' + domain + ' to your DMARC record.',
-          score: 1,
         })
       }
     }
@@ -195,7 +184,6 @@ export const emailSecurityCheck: Check = {
         severity: 'info',
         status: 'pass',
         detail: `No MX records for ${domain}. Domain may not send email — SPF/DMARC still recommended to block spoofing.`,
-        score: 0,
       })
     }
 

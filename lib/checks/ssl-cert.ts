@@ -18,7 +18,6 @@ export const sslCertCheck: Check = {
         status: 'fail',
         detail: 'Site is not served over HTTPS — no SSL certificate in use.',
         fix: "Install an SSL certificate (free via Let's Encrypt) and redirect all HTTP to HTTPS.",
-        score: 10,
       }]
     }
 
@@ -32,7 +31,6 @@ export const sslCertCheck: Check = {
         status: 'fail',
         detail: 'Strict-Transport-Security header is missing. Browsers can still be downgraded to HTTP.',
         fix: 'Add: Strict-Transport-Security: max-age=31536000; includeSubDomains; preload',
-        score: 5,
       })
     } else {
       const maxAge = hsts.match(/max-age=(\d+)/)
@@ -45,7 +43,6 @@ export const sslCertCheck: Check = {
           status: 'fail',
           detail: `HSTS max-age is ${age}s — recommended minimum is 31536000 (1 year).`,
           fix: 'Set max-age=31536000 or higher in your Strict-Transport-Security header.',
-          score: 2,
         })
       } else {
         results.push({
@@ -54,7 +51,6 @@ export const sslCertCheck: Check = {
           severity: 'info',
           status: 'pass',
           detail: `HSTS enabled with max-age=${age}s.`,
-          score: 0,
         })
       }
 
@@ -66,7 +62,6 @@ export const sslCertCheck: Check = {
           status: 'fail',
           detail: 'HSTS preload directive is missing. Site is not eligible for browser preload lists.',
           fix: 'Add "preload" to your HSTS header and submit to hstspreload.org.',
-          score: 1,
         })
       }
     }

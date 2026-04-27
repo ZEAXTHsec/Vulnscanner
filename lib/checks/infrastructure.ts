@@ -55,7 +55,6 @@ export const infrastructureCheck: Check = {
         severity: 'info',
         status: 'pass',
         detail: `Site is served through ${detected} — provides DDoS protection and edge caching.`,
-        score: 0,
       })
     } else {
       results.push({
@@ -65,7 +64,6 @@ export const infrastructureCheck: Check = {
         status: 'fail',
         detail: 'No CDN or WAF signals found. Origin server may be directly exposed to DDoS and scraping attacks.',
         fix: 'Put your site behind Cloudflare (free tier available). This hides your origin IP and adds DDoS protection.',
-        score: 4,
       })
     }
 
@@ -88,7 +86,6 @@ export const infrastructureCheck: Check = {
         status: 'fail',
         detail: `Debug signals found: ${foundDebug.map((d) => d.label).join(', ')}. Reveals internal paths, versions, and logic to attackers.`,
         fix: 'Disable debug mode in production. Set APP_DEBUG=false, WP_DEBUG=false, etc. Use generic error pages.',
-        score: 9,
       })
     }
 
@@ -101,7 +98,6 @@ export const infrastructureCheck: Check = {
         severity: 'info',
         status: 'pass',
         detail: 'Cloudflare Bot Management is actively mitigating requests.',
-        score: 0,
       })
     }
 
@@ -114,7 +110,6 @@ export const infrastructureCheck: Check = {
         status: 'fail',
         detail: 'Both Content-Length and Transfer-Encoding headers present. Can indicate HTTP response splitting vulnerability.',
         fix: 'Ensure your web server sends only one of Content-Length or Transfer-Encoding per response.',
-        score: 4,
       })
     }
 
@@ -128,7 +123,6 @@ export const infrastructureCheck: Check = {
         status: 'fail',
         detail: `Found ${versionComments.length} HTML comment(s) containing version numbers. Helps attackers identify vulnerable software versions.`,
         fix: 'Remove version numbers from HTML comments in production builds.',
-        score: 2,
       })
     }
 

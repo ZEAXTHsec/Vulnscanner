@@ -22,49 +22,42 @@ const DOM_SIGNALS: XssSignal[] = [
     label: 'javascript: URL scheme',
     detail: 'href="javascript:..." can execute arbitrary JS when clicked — a classic DOM XSS vector.',
     severity: 'high',
-    score: 8,
   },
   {
     pattern: /location\s*(?:\.href|\.replace|\.assign)\s*=\s*[^"'\s][^;]*(hash|search|param|query)/i,
     label: 'DOM-controlled location assignment',
     detail: 'location.href/replace/assign is set from URL-derived data (hash/search). An attacker can craft a URL to redirect victims to a javascript: scheme or external site.',
     severity: 'high',
-    score: 8,
   },
   {
     pattern: /\.src\s*=\s*[^"';\n]*(?:location|hash|search|param|query)/i,
     label: 'DOM source assignment from URL data',
     detail: 'A script/iframe src is being set from URL-controlled input — potential script injection vector.',
     severity: 'high',
-    score: 8,
   },
   {
     pattern: /document\.cookie\s*=[^;]+(?:unescape|decodeURI|location\.)/i,
     label: 'Cookie set from URL-derived value',
     detail: 'document.cookie is being assigned a value derived from the URL. An attacker-controlled URL could inject a session fixation payload.',
     severity: 'medium',
-    score: 5,
   },
   {
     pattern: /postMessage\s*\(/i,
     label: 'postMessage usage detected',
     detail: 'postMessage is used. If the message handler does not validate the event.origin, cross-origin messages can trigger XSS or data theft.',
     severity: 'medium',
-    score: 4,
   },
   {
     pattern: /addEventListener\s*\(\s*["']message["']/i,
     label: 'message event listener without visible origin check',
     detail: 'A message event listener is registered. Verify event.origin is checked before trusting the data.',
     severity: 'low',
-    score: 3,
   },
   {
     pattern: /srcdoc\s*=/i,
     label: 'iframe srcdoc usage',
     detail: 'iframe srcdoc injects raw HTML into an iframe. If any part of that HTML is user-controlled, it is a direct XSS sink.',
     severity: 'medium',
-    score: 5,
   },
   {
     // Minified frameworks (React, Closure, gws) set Object.prototype legitimately.
@@ -74,21 +67,18 @@ const DOM_SIGNALS: XssSignal[] = [
     label: 'Prototype pollution vector',
     detail: 'Code modifies __proto__ or Object.prototype in a context that appears to involve user-controlled input — a prototype pollution pattern that can lead to XSS or RCE.',
     severity: 'high',
-    score: 7,
   },
   {
     pattern: /insertAdjacentHTML\s*\(/i,
     label: 'insertAdjacentHTML usage',
     detail: 'insertAdjacentHTML is a direct HTML-injection sink. If any argument is user-controlled it enables XSS.',
     severity: 'medium',
-    score: 5,
   },
   {
     pattern: /outerHTML\s*=/i,
     label: 'outerHTML assignment',
     detail: 'outerHTML assignment is an HTML-injection sink. User-controlled values passed here enable DOM XSS.',
     severity: 'medium',
-    score: 5,
   },
 ]
 
@@ -128,7 +118,6 @@ export const xssCheck: Check = {
           severity: 'info',
           status: 'pass',
           detail: 'postMessage is used and an origin validation pattern was detected.',
-          score: 0,
         })
         continue
       }
@@ -162,7 +151,6 @@ export const xssCheck: Check = {
         severity: 'info',
         status: 'pass',
         detail: 'No high-risk DOM XSS patterns (javascript: URLs, srcdoc, outerHTML, prototype pollution, etc.) detected in page source.',
-        score: 0,
       })
     }
 

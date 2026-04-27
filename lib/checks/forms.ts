@@ -25,7 +25,6 @@ export const formsCheck: Check = {
         status: 'fail',
         detail: `${passwordFields.length - autocompleteOff.length} password field(s) without autocomplete="off" or "new-password". Passwords may be stored in browser history.`,
         fix: 'Add autocomplete="new-password" or autocomplete="current-password" to password inputs.',
-        score: 2,
       })
     } else if (passwordFields.length > 0) {
       results.push({
@@ -34,7 +33,6 @@ export const formsCheck: Check = {
         severity: 'info',
         status: 'pass',
         detail: 'All password fields have autocomplete attributes set.',
-        score: 0,
       })
     }
 
@@ -50,7 +48,6 @@ export const formsCheck: Check = {
         status: 'fail',
         detail: `${httpActions.length} form(s) submit data to plain HTTP URLs. Credentials and data sent in cleartext.`,
         fix: 'Change all form action URLs from http:// to https://.',
-        score: 8,
       })
     }
 
@@ -72,7 +69,6 @@ export const formsCheck: Check = {
         status: 'fail',
         detail: `Found ${suspiciousHidden.length} hidden field(s) with potentially sensitive names (e.g. role, price, user_id). These can be tampered with client-side.`,
         fix: 'Never trust hidden field values for security decisions. Validate all values server-side.',
-        score: 5,
       })
     }
 
@@ -88,7 +84,6 @@ export const formsCheck: Check = {
         status: 'fail',
         detail: `${inputCount} input field(s) found with no <label> elements. Reduces accessibility and may indicate rushed/insecure form construction.`,
         fix: 'Add <label for="..."> elements to all form inputs.',
-        score: 1,
       })
     }
 
@@ -99,7 +94,6 @@ export const formsCheck: Check = {
         severity: 'info',
         status: 'pass',
         detail: 'No form-related security issues detected.',
-        score: 0,
       })
     }
 

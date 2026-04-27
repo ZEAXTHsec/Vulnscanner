@@ -23,7 +23,6 @@ export const subresourcesCheck: Check = {
         status: 'fail',
         detail: `${scriptsWithoutSri.length} external script(s) loaded without integrity= attribute. A compromised CDN could inject malicious code.`,
         fix: 'Add integrity="sha384-..." and crossorigin="anonymous" to external scripts. Generate hashes at srihash.org.',
-        score: 5,
       })
     } else if (externalScripts.length > 0) {
       results.push({
@@ -32,7 +31,6 @@ export const subresourcesCheck: Check = {
         severity: 'info',
         status: 'pass',
         detail: `All ${externalScripts.length} external script(s) have SRI integrity hashes.`,
-        score: 0,
       })
     }
 
@@ -61,7 +59,6 @@ export const subresourcesCheck: Check = {
         status: 'fail',
         detail: `Page loads resources from ${thirdPartyDomains.size} external domains. Each is a potential supply-chain risk and tracking vector.`,
         fix: 'Audit and reduce third-party dependencies. Self-host critical scripts where possible.',
-        score: 2,
       })
     } else if (thirdPartyDomains.size > 0) {
       results.push({
@@ -70,7 +67,6 @@ export const subresourcesCheck: Check = {
         severity: 'info',
         status: 'pass',
         detail: `Page loads from ${thirdPartyDomains.size} external domain(s) — within acceptable range.`,
-        score: 0,
       })
     }
 
@@ -92,7 +88,6 @@ export const subresourcesCheck: Check = {
         status: 'fail',
         detail: `Found: ${foundTrackers.join(', ')}. Ensure GDPR/CCPA consent mechanisms are in place.`,
         fix: 'Add a cookie consent banner. Load tracking scripts only after user consent.',
-        score: 2,
       })
     }
 

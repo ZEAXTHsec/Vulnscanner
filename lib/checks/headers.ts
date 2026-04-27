@@ -39,7 +39,6 @@ const LEAK_HEADERS: {
     detail: (val) => `Server header reveals: "${val}". Attackers can target known CVEs for this software/version.`,
     fix: 'Suppress or genericise the Server header in your web server config (e.g. ServerTokens Prod in Apache, server_tokens off in nginx).',
     severity: 'low',
-    score: 2,
     // Only flag if it leaks a version/software name — not generic opaque values
     shouldFlag: (val) => {
       if (SAFE_SERVER_PATTERNS.some((p) => p.test(val))) return false
@@ -52,7 +51,6 @@ const LEAK_HEADERS: {
     detail: (val) => `X-Powered-By reveals: "${val}". This helps attackers fingerprint your stack.`,
     fix: 'Remove X-Powered-By. In Express: app.disable("x-powered-by"). In PHP: expose_php = Off.',
     severity: 'low',
-    score: 2,
   },
   {
     key: 'x-aspnet-version',
@@ -60,7 +58,6 @@ const LEAK_HEADERS: {
     detail: (val) => `X-AspNet-Version: "${val}" — version fingerprinting risk.`,
     fix: 'Remove in web.config: <httpRuntime enableVersionHeader="false" />',
     severity: 'low',
-    score: 2,
   },
   {
     key: 'x-aspnetmvc-version',
@@ -68,7 +65,6 @@ const LEAK_HEADERS: {
     detail: (val) => `X-AspNetMvc-Version: "${val}" — version fingerprinting risk.`,
     fix: 'In Global.asax Application_Start: MvcHandler.DisableMvcResponseHeader = true;',
     severity: 'low',
-    score: 1,
   },
 ]
 
@@ -94,7 +90,6 @@ export const headersCheck: Check = {
         detail: 'Browser may MIME-sniff responses away from the declared content-type, enabling content injection attacks.',
         fix: 'Add header: X-Content-Type-Options: nosniff',
         fixPrompt: xContentTypeOptionsPrompt(ctx.stack),
-        score: 4,
       })
     }
 
@@ -109,7 +104,6 @@ export const headersCheck: Check = {
         detail: 'Page can be embedded in an iframe by any origin, enabling clickjacking attacks.',
         fix: 'Add header: X-Frame-Options: SAMEORIGIN (or use CSP frame-ancestors directive).',
         fixPrompt: xFrameOptionsPrompt(ctx.stack),
-        score: 5,
       })
     }
 
@@ -124,7 +118,6 @@ export const headersCheck: Check = {
         detail: 'Browser will send the full Referrer header by default, potentially leaking URLs with sensitive query params to third parties.',
         fix: 'Add header: Referrer-Policy: strict-origin-when-cross-origin',
         fixPrompt: referrerPolicyPrompt(ctx.stack),
-        score: 2,
       })
     }
 
@@ -138,7 +131,6 @@ export const headersCheck: Check = {
         severity: 'info',
         status: 'pass',
         detail: 'All recommended security headers (X-Content-Type-Options, X-Frame-Options, Referrer-Policy) are set.',
-        score: 0,
       })
     }
 
@@ -168,7 +160,6 @@ export const headersCheck: Check = {
         severity: 'info',
         status: 'pass',
         detail: 'Server, X-Powered-By, and framework version headers are suppressed or absent.',
-        score: 0,
       })
     }
 
@@ -183,7 +174,6 @@ export const headersCheck: Check = {
         status: 'fail',
         detail: `Missing: ${[!coep && 'COEP', !coop && 'COOP'].filter(Boolean).join(', ')}. These headers enable cross-origin isolation, required for SharedArrayBuffer and Spectre mitigations.`,
         fix: 'Add: Cross-Origin-Embedder-Policy: require-corp and Cross-Origin-Opener-Policy: same-origin if your app uses SharedArrayBuffer.',
-        score: 1,
       })
     }
 

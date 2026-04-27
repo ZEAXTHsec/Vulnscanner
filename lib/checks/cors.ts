@@ -22,7 +22,6 @@ export const corsCheck: Check = {
         severity: 'info',
         status: 'pass',
         detail: 'No CORS headers detected. Cross-origin requests are restricted by default.',
-        score: 0,
       }]
     }
 
@@ -41,7 +40,6 @@ export const corsCheck: Check = {
           detail: 'CORS is set to wildcard (*) AND credentials are enabled. Browsers block this combination, but it signals a misconfigured backend that may allow credential leakage on endpoints that do implement it correctly.',
           fix: 'Set Access-Control-Allow-Origin to a specific trusted domain. Never combine * with Access-Control-Allow-Credentials: true.',
           fixPrompt: corsWildcardCredentialsPrompt(ctx.stack),
-          score: 9,
           raw: { origin, methods, credentials },
         })
       } else {
@@ -55,7 +53,6 @@ export const corsCheck: Check = {
           detail: 'Any origin can read responses from this server. Risky for authenticated or sensitive endpoints — CSRF tokens, user data, or internal API responses may be readable from attacker-controlled pages.',
           fix: 'Restrict Access-Control-Allow-Origin to specific trusted domains. Only use * for genuinely public, unauthenticated resources.',
           fixPrompt: corsWildcardPrompt(ctx.stack),
-          score: 5,
           raw: { origin, methods, credentials },
         })
       }
@@ -69,7 +66,6 @@ export const corsCheck: Check = {
         status: 'fail',
         detail: 'Server allows the "null" origin. Sandboxed iframes and local file:// requests have a null origin — an attacker can use a sandboxed iframe to send credentialed cross-origin requests.',
         fix: 'Never whitelist the null origin. Restrict Access-Control-Allow-Origin to explicit trusted domains.',
-        score: 6,
         raw: { origin, credentials },
       })
     } else {
@@ -80,7 +76,6 @@ export const corsCheck: Check = {
         severity: 'info',
         status: 'pass',
         detail: `CORS restricted to origin: ${origin}`,
-        score: 0,
         raw: { origin },
       })
     }

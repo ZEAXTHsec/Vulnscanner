@@ -2,7 +2,6 @@
 
 import { Check, ScanContext, ScanResult } from '@/lib/types'
 import { fetchPath } from '@/lib/scanner/fetcher'
-import { SCAN_CONFIG } from '@/lib/constants'
 import { exposedFilesHighPrompt, exposedFilesMediumPrompt } from '@/lib/utils/fix-prompts'
 
 const EXPOSED_FILE_PATHS: {
@@ -123,41 +122,30 @@ export const exposedFilesCheck: Check = {
 
     const exposed: { path: string; label: string; severity: string }[] = []
 
-    // Batched concurrency — avoids firing 35+ simultaneous requests which
-    // exhausts the global 9s budget on slow targets (issue #11).
-    const queue = [...EXPOSED_FILE_PATHS]
+    await Promise.all(
+      EXPOSED_FILE_PATHS.map(async ({ path, label, severity, contentSignal, secondarySignal }) => {
+        try {
+          const res = await fetchPath(ctx.url, path)
+          if (res.statusCode !== 200) return
 
-    async function checkNext(): Promise<void> {
-      const entry = queue.shift()
-      if (!entry) return
-      const { path, label, severity, contentSignal, secondarySignal } = entry
-
-      try {
-        const res = await fetchPath(ctx.url, path)
-        if (res.statusCode === 200) {
           const body = res.html
 
-          const isSoft404 = homepageFingerprint && body.slice(0, 500) === homepageFingerprint
-          const isErrorPage = /404|not found|page not found|does not exist/i.test(body.slice(0, 300))
+          // Reject soft-404s — body matches homepage
+          if (homepageFingerprint && body.slice(0, 500) === homepageFingerprint) return
 
-          if (!isSoft404 && !isErrorPage) {
-            const primaryOk  = !contentSignal   || contentSignal.test(body)
-            const secondaryOk = !secondarySignal || secondarySignal.test(body)
-            if (primaryOk && secondaryOk) {
-              exposed.push({ path, label, severity })
-            }
-          }
-        }
-      } catch { /* not accessible */ }
+          // Reject generic error pages
+          if (/404|not found|page not found|does not exist/i.test(body.slice(0, 300))) return
 
-      await checkNext()
-    }
+          // Require primary content signal
+          if (contentSignal && !contentSignal.test(body)) return
 
-    const workers = Array.from(
-      { length: Math.min(SCAN_CONFIG.EXPOSED_FILES_CONCURRENCY, EXPOSED_FILE_PATHS.length) },
-      () => checkNext()
+          // Require secondary signal if defined (double-confirmation for PHP files)
+          if (secondarySignal && !secondarySignal.test(body)) return
+
+          exposed.push({ path, label, severity })
+        } catch { /* not accessible */ }
+      })
     )
-    await Promise.all(workers)
 
     if (exposed.length === 0) {
       results.push({

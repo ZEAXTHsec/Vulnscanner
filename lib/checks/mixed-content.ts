@@ -79,7 +79,6 @@ export const mixedContentCheck: Check = {
         severity: 'info',
         status: 'skip',
         detail: 'Page is served over HTTP — mixed content check only applies to HTTPS pages.',
-        score: 0,
       })
       return results
     }
@@ -103,7 +102,6 @@ export const mixedContentCheck: Check = {
         status: 'fail',
         detail: `${activeResources.length} active resource(s) loaded over HTTP (${Object.entries(byTag).map(([t, c]) => `${c} <${t}>`).join(', ')}). Browsers block these. Example: ${uniqueUrls.slice(0, 3).join(', ')}`,
         fix: 'Change all resource URLs from http:// to https://.',
-        score: 8,
       })
     }
 
@@ -119,7 +117,6 @@ export const mixedContentCheck: Check = {
         status: 'fail',
         detail: `${passiveResources.length} passive resource(s) (${Object.entries(byTag).map(([t, c]) => `${c} <${t}>`).join(', ')}) loaded over HTTP. Example: ${uniqueUrls.slice(0, 3).join(', ')}`,
         fix: 'Change all resource URLs from http:// to https:// or use protocol-relative URLs (//).',
-        score: 5,
       })
     }
 
@@ -138,7 +135,6 @@ export const mixedContentCheck: Check = {
         status: 'fail',
         detail: `Found ${inlineCount} fetch()/XHR call(s) in inline scripts targeting HTTP endpoints. These will be blocked as mixed content.`,
         fix: 'Update all API/fetch endpoint URLs to use https://.',
-        score: 5,
       })
     }
 
@@ -149,7 +145,6 @@ export const mixedContentCheck: Check = {
         severity: 'info',
         status: 'pass',
         detail: 'All resources appear to be loaded over HTTPS. No mixed content detected in page source.',
-        score: 0,
       })
     }
 

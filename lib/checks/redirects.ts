@@ -41,7 +41,6 @@ export const redirectsCheck: Check = {
         detail: `Found ${suspiciousLinks.length} link(s) with redirect parameters pointing to external URLs. Attackers use this to send victims to phishing pages via your trusted domain — e.g. yourdomain.com?redirect=evil.com.`,
         fix: 'Validate redirect destinations server-side. Use an allowlist of permitted redirect URLs.',
         fixPrompt: openRedirectPrompt(ctx.stack),
-        score: 5,
         raw: { examples: suspiciousLinks.slice(0, 3) },
       })
     } else {
@@ -51,7 +50,6 @@ export const redirectsCheck: Check = {
         severity: 'info',
         status: 'pass',
         detail: 'No obvious open redirect parameters found in page links.',
-        score: 0,
       })
     }
 
@@ -67,7 +65,6 @@ export const redirectsCheck: Check = {
           status: 'fail',
           detail: 'Page uses <meta http-equiv="refresh"> to redirect to an external URL. Often used in phishing.',
           fix: 'Remove meta refresh redirects. Use proper HTTP 301/302 redirects instead.',
-          score: 4,
         })
       }
     }
@@ -82,7 +79,6 @@ export const redirectsCheck: Check = {
         status: 'fail',
         detail: `${jsLinks.length} link(s) use javascript: protocol in href. These are XSS vectors and bypass CSP in some browsers.`,
         fix: 'Replace javascript: href links with proper button elements and event handlers.',
-        score: 4,
       })
     }
 

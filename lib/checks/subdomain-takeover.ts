@@ -91,7 +91,6 @@ export const subdomainTakeoverCheck: Check = {
         status: 'fail',
         detail: `Page response matches known "unclaimed resource" fingerprint(s) for: ${matched.map((m) => m.label).join(', ')}. This strongly suggests the subdomain is pointing to a service with no active resource — a subdomain takeover may be possible.`,
         fix: 'Either (a) claim the resource on the target service, or (b) remove the dangling DNS record pointing to it. Investigate immediately.',
-        score: 9,
       })
     }
 
@@ -123,7 +122,6 @@ export const subdomainTakeoverCheck: Check = {
           severity: 'info',
           status: 'pass',
           detail: `${hostname} CNAMEs to "${cname}" — not a known takeover-risk service.`,
-          score: 0,
         })
       }
     }
@@ -155,7 +153,6 @@ export const subdomainTakeoverCheck: Check = {
         status: 'fail',
         detail: `Page references ${riskyRefs.length} subdomain(s) that CNAME to claimable services: ${riskyRefs.slice(0, 5).join(', ')}${riskyRefs.length > 5 ? ` (+${riskyRefs.length - 5} more)` : ''}. If any are unclaimed, an attacker could serve content that your page loads.`,
         fix: 'Audit all embedded subdomains. Verify each CNAME target is actively claimed.',
-        score: 5,
       })
     }
 
@@ -166,7 +163,6 @@ export const subdomainTakeoverCheck: Check = {
         severity: 'info',
         status: 'pass',
         detail: 'No unclaimed-service fingerprints or dangling CNAME patterns detected.',
-        score: 0,
       })
     }
 

@@ -99,7 +99,6 @@ export const openDirsCheck: Check = {
         severity: 'info',
         status: 'pass',
         detail: `Checked ${SENSITIVE_PATHS.length} sensitive paths — none exposed.`,
-        score: 0,
       })
     } else {
       results.push({
@@ -109,7 +108,6 @@ export const openDirsCheck: Check = {
         status: 'fail',
         detail: `Exposed paths found: ${exposed.join(', ')}`,
         fix: 'Block access to these paths via server config or .htaccess. Never expose admin panels or debug endpoints publicly.',
-        score: 9,
         raw: { exposed },
       })
     }

@@ -56,7 +56,6 @@ export const techDetectCheck: Check = {
         severity: 'info',
         status: 'pass',
         detail: 'No known technologies detected from HTML/headers.',
-        score: 0,
       }]
     }
 
@@ -66,7 +65,6 @@ export const techDetectCheck: Check = {
       severity: 'info',
       status: 'pass',
       detail: `Detected: ${detected.join(', ')}`,
-      score: 0,
       raw: { detected },
     }]
   },
