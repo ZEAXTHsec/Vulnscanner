@@ -72,7 +72,7 @@ const TERMINAL_LINES = [
 ]
 
 const STATS = [
-  { icon: <SearchSVG />, value: '23+', label: 'Checks' },
+  { icon: <SearchSVG />, value: '100+', label: 'Checks' },
   { icon: <ClockSVG />, value: '<10s', label: 'Scan time' },
   { icon: <ShieldSVG />, value: '0', label: 'Data stored' },
 ]
@@ -82,6 +82,7 @@ export default function ScanInput() {
   const { scan, reset, isLoading, report, error } = useScan()
   const [activeBadge, setActiveBadge] = useState(0)
   const [mounted, setMounted] = useState(false)
+  const [tilt, setTilt] = useState({ x: 0, y: 0, glow: false })
 
   useEffect(() => {
     setMounted(true)
@@ -92,10 +93,30 @@ export default function ScanInput() {
   const handleScan = () => { if (url.trim()) scan(url) }
 
   const handleRescan = () => {
-    // Re-scan the same URL — scroll to top for visual feedback
     window.scrollTo({ top: 0, behavior: 'smooth' })
     if (url.trim()) scan(url)
     else reset()
+  }
+
+  const handleCardMove = (e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
+    const el = (e.currentTarget as HTMLDivElement).getBoundingClientRect()
+    let clientX: number, clientY: number
+    if ('touches' in e) {
+      clientX = e.touches[0].clientX
+      clientY = e.touches[0].clientY
+    } else {
+      clientX = (e as React.MouseEvent).clientX
+      clientY = (e as React.MouseEvent).clientY
+    }
+    const cx = el.left + el.width / 2
+    const cy = el.top + el.height / 2
+    const dx = (clientX - cx) / (el.width / 2)
+    const dy = (clientY - cy) / (el.height / 2)
+    setTilt({ x: dy * -8, y: dx * 8, glow: true })
+  }
+
+  const handleCardLeave = () => {
+    setTilt({ x: 0, y: 0, glow: false })
   }
 
   return (
@@ -222,14 +243,28 @@ export default function ScanInput() {
           </div>
 
           {/* Animated terminal */}
-          <div style={{
-            maxWidth: '680px', margin: '0 auto',
-            borderRadius: 'var(--radius-xl)',
-            border: '1px solid var(--border-mid)',
-            background: '#06080f',
-            boxShadow: '0 0 0 1px rgba(34,211,168,0.04), 0 32px 80px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.03)',
-            overflow: 'hidden', textAlign: 'left',
-          }}>
+          <div
+            onMouseMove={handleCardMove}
+            onMouseLeave={handleCardLeave}
+            onTouchMove={handleCardMove}
+            onTouchEnd={handleCardLeave}
+            style={{
+              maxWidth: '680px', margin: '0 auto',
+              borderRadius: 'var(--radius-xl)',
+              border: `1px solid ${tilt.glow ? 'rgba(34,211,168,0.35)' : 'var(--border-mid)'}`,
+              background: '#06080f',
+              boxShadow: tilt.glow
+                ? '0 0 0 1px rgba(34,211,168,0.08), 0 40px 100px rgba(0,0,0,0.7), 0 0 60px rgba(34,211,168,0.08), inset 0 1px 0 rgba(255,255,255,0.04)'
+                : '0 0 0 1px rgba(34,211,168,0.04), 0 32px 80px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.03)',
+              overflow: 'hidden', textAlign: 'left',
+              transform: `perspective(900px) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg) scale(${tilt.glow ? 1.018 : 1})`,
+              transition: tilt.glow
+                ? 'transform 0.08s ease, box-shadow 0.2s ease, border-color 0.2s ease'
+                : 'transform 0.5s cubic-bezier(0.22,1,0.36,1), box-shadow 0.4s ease, border-color 0.4s ease',
+              cursor: 'default',
+              willChange: 'transform',
+            }}
+          >
             {/* Title bar */}
             <div style={{
               display: 'flex', alignItems: 'center', gap: '7px',

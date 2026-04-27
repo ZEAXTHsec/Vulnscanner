@@ -1,5 +1,4 @@
 import ScanInput from '@/components/scanner/ScanInput'
-import ScanHistory from '@/components/scanner/ScanHistory'
 
 // ─── JSON-LD Schema ────────────────────────────────────────────────────────────
 const schemaWebApp = JSON.stringify({
@@ -285,7 +284,7 @@ export default function Home() {
             }}>
               <span style={{ width: 7, height: 7, borderRadius: '50%', background: 'var(--accent)', display: 'inline-block', boxShadow: '0 0 8px var(--accent)' }} />
               <span style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--accent)', letterSpacing: '0.07em', textTransform: 'uppercase', fontFamily: 'var(--font-mono)' }}>
-                23 security checks · instant · free
+                100+ security checks · instant · free
               </span>
             </div>
 
@@ -618,9 +617,6 @@ export default function Home() {
               ))}
             </div>
           </section>
-
-          {/* ── SCAN HISTORY ── */}
-          <ScanHistory />
 
           {/* ── FAQ ── */}
           <section id="faq" style={{ paddingBottom: '80px' }}>
