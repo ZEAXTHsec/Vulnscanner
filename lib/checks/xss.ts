@@ -11,7 +11,6 @@ interface XssSignal {
   label: string
   detail: string
   severity: 'high' | 'medium' | 'low'
-  score: number
   // Optional second pattern — BOTH must match to fire (reduces false positives)
   confirmPattern?: RegExp
 }
@@ -140,7 +139,6 @@ export const xssCheck: Check = {
         detail: sig.detail,
         fix: 'Audit all DOM sinks. Never pass user-controlled data (URL params, hash, cookies) directly to HTML-injection sinks. Use textContent instead of innerHTML where possible, and validate postMessage origins.',
         fixPrompt: xssDomSinkPrompt(ctx.stack),
-        score: sig.score,
       })
     }
 

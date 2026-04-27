@@ -30,7 +30,6 @@ const LEAK_HEADERS: {
   detail: (val: string) => string
   fix: string
   severity: 'high' | 'medium' | 'low'
-  score: number
   shouldFlag?: (val: string) => boolean
 }[] = [
   {
@@ -149,7 +148,6 @@ export const headersCheck: Check = {
         status: 'fail',
         detail: h.detail(val),
         fix: h.fix,
-        score: h.score,
       })
     }
 
