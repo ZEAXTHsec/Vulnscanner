@@ -9,16 +9,8 @@ import { lookup } from 'dns/promises'
 // any outbound fetch.  Prevents scanning AWS metadata (169.254.169.254),
 // localhost, and internal RFC-1918 ranges.
 
-const PRIVATE_IP_RE = /^(
-  127\.|          # loopback
-  0\.|            # 0.0.0.0/8
-  10\.|           # RFC-1918
-  192\.168\.|     # RFC-1918
-  172\.(1[6-9]|2\d|3[01])\.|  # RFC-1918 172.16–31
-  169\.254\.|     # link-local (AWS metadata, etc.)
-  ::1$|           # IPv6 loopback
-  fc|fd|fe80      # IPv6 ULA / link-local
-)/x
+// Matches loopback, RFC-1918, link-local, and IPv6 private ranges
+const PRIVATE_IP_RE = /^(127\.|0\.|10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.|169\.254\.|::1$|fc|fd|fe80)/
 
 function isPrivateIp(ip: string): boolean {
   return PRIVATE_IP_RE.test(ip)
