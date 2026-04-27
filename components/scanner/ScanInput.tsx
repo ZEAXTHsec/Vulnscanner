@@ -79,7 +79,7 @@ const STATS = [
 
 export default function ScanInput() {
   const [url, setUrl] = useState('')
-  const { scan, isLoading, report, error } = useScan()
+  const { scan, reset, isLoading, report, error } = useScan()
   const [activeBadge, setActiveBadge] = useState(0)
   const [mounted, setMounted] = useState(false)
 
@@ -90,6 +90,13 @@ export default function ScanInput() {
   }, [])
 
   const handleScan = () => { if (url.trim()) scan(url) }
+
+  const handleRescan = () => {
+    // Re-scan the same URL — scroll to top for visual feedback
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+    if (url.trim()) scan(url)
+    else reset()
+  }
 
   return (
     <div>
@@ -356,7 +363,7 @@ export default function ScanInput() {
       {/* ── Report ────────────────────────────────────────────────── */}
       {report && (
         <div style={{ animation: 'fadeUp 0.4s cubic-bezier(0.22,1,0.36,1) both' }}>
-          <SummaryCards summary={report.summary} url={report.url} timestamp={report.timestamp} />
+          <SummaryCards summary={report.summary} url={report.url} timestamp={report.timestamp} onRescan={handleRescan} />
           <TechBadges results={report.results} />
           <FixAllBanner results={report.results} summary={report.summary} url={report.url} />
           <TopIssues results={report.results} summary={report.summary} />

@@ -3,7 +3,7 @@
 import { useEffect, useRef } from 'react'
 import { ScanSummary } from '@/lib/types'
 
-interface Props { summary: ScanSummary; url: string; timestamp: string }
+interface Props { summary: ScanSummary; url: string; timestamp: string; onRescan?: () => void }
 
 function scoreColor(s: number) { return s >= 80 ? 'var(--accent)' : s >= 50 ? 'var(--yellow)' : 'var(--red)' }
 function scoreColorRaw(s: number) { return s >= 80 ? '#00d4aa' : s >= 50 ? '#ffc94d' : '#ff4d6a' }
@@ -156,7 +156,7 @@ function StatCard({
   )
 }
 
-export default function SummaryCards({ summary, url, timestamp }: Props) {
+export default function SummaryCards({ summary, url, timestamp, onRescan }: Props) {
   const color = scoreColor(summary.score)
   const colorRaw = scoreColorRaw(summary.score)
   const label = scoreLabel(summary.score)
@@ -229,6 +229,42 @@ export default function SummaryCards({ summary, url, timestamp }: Props) {
           }}>
             {new Date(timestamp).toLocaleString()}
           </span>
+          {onRescan && (
+            <button
+              onClick={onRescan}
+              style={{
+                marginLeft: '8px',
+                padding: '5px 14px',
+                background: 'var(--bg-elevated)',
+                border: '1px solid var(--border-mid)',
+                borderRadius: 'var(--radius)',
+                color: 'var(--text-muted)',
+                fontSize: '0.76rem',
+                fontFamily: 'var(--font-ui)',
+                fontWeight: 600,
+                cursor: 'pointer',
+                flexShrink: 0,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '5px',
+                transition: 'color 0.15s, border-color 0.15s, background 0.15s',
+              }}
+              onMouseEnter={e => {
+                const el = e.currentTarget
+                el.style.color = 'var(--accent)'
+                el.style.borderColor = 'var(--accent)'
+                el.style.background = 'var(--accent-dim)'
+              }}
+              onMouseLeave={e => {
+                const el = e.currentTarget
+                el.style.color = 'var(--text-muted)'
+                el.style.borderColor = 'var(--border-mid)'
+                el.style.background = 'var(--bg-elevated)'
+              }}
+            >
+              ↺ Re-scan
+            </button>
+          )}
         </div>
 
         {/* Cards row */}

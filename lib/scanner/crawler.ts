@@ -9,15 +9,12 @@ import { fetchTarget } from '@/lib/scanner/fetcher'
 import { FetchResult } from '@/lib/types'
 
 export interface CrawlResult {
-  // The primary page (homepage) — used as the main ScanContext
-  primary: FetchResult
-  // All pages crawled including primary
-  pages: FetchResult[]
-  // Stats for UI display
+  primary: FetchResult          // The primary page (homepage) — used as the main ScanContext
+  pages:   FetchResult[]        // All pages crawled including primary
   stats: {
-    pagesCrawled: number
+    pagesCrawled:    number
     endpointsTested: number
-    linksFound: number
+    linksFound:      number
   }
 }
 
@@ -33,22 +30,16 @@ function extractLinks(html: string, base: URL): string[] {
     if (!match) continue
     const raw = match[1].trim()
 
-    // Skip ignored prefixes
     if (IGNORED_PREFIXES.some(p => raw.startsWith(p))) continue
-
-    // Skip file downloads
     if (IGNORED_EXTENSIONS.test(raw)) continue
 
     try {
       const resolved = new URL(raw, base)
-
-      // Same origin only
       if (resolved.origin !== base.origin) continue
 
       // Drop query strings and fragments — prevents parameter explosions
       resolved.search = ''
       resolved.hash   = ''
-
       links.push(resolved.href)
     } catch {
       // Unparseable href — skip
@@ -59,23 +50,29 @@ function extractLinks(html: string, base: URL): string[] {
 }
 
 function countEndpoints(pages: FetchResult[]): number {
-  // Count unique paths across all crawled pages
   const paths = new Set<string>()
   for (const page of pages) {
-    try {
-      paths.add(new URL(page.url).pathname)
-    } catch { /* skip */ }
+    try { paths.add(new URL(page.url).pathname) } catch { /* skip */ }
   }
   return paths.size
 }
 
-export async function crawlTarget(startUrl: string): Promise<CrawlResult> {
-  const base        = new URL(startUrl)
-  const visited     = new Set<string>()
-  const queue:      { url: string; depth: number }[] = [{ url: startUrl, depth: 0 }]
-  const pages:      FetchResult[] = []
-  let   linksFound  = 0
+async function fetchIfHtml(url: string): Promise<FetchResult | null> {
+  const result = await fetchTarget(url)
+  if (result.error || result.statusCode === 0) return null
+  const ct = result.headers['content-type'] ?? ''
+  if (ct !== '' && !ct.includes('text/html')) return null
+  return result
+}
 
+export async function crawlTarget(startUrl: string): Promise<CrawlResult> {
+  const base       = new URL(startUrl)
+  const visited    = new Set<string>()
+  const queue:     { url: string; depth: number }[] = [{ url: startUrl, depth: 0 }]
+  const pages:     FetchResult[] = []
+  let   linksFound = 0
+
+  // ─── Main BFS loop ────────────────────────────────────────────────────────
   while (queue.length > 0 && pages.length < SCAN_CONFIG.MAX_PAGES) {
     const next = queue.shift()
     if (!next) break
@@ -86,14 +83,8 @@ export async function crawlTarget(startUrl: string): Promise<CrawlResult> {
     if (visited.has(normalised)) continue
     visited.add(normalised)
 
-    const result = await fetchTarget(url)
-
-    // Skip failed fetches
-    if (result.error || result.statusCode === 0) continue
-
-    // Skip non-HTML responses (CSS, JSON APIs, etc.)
-    const ct = result.headers['content-type'] ?? ''
-    if (!ct.includes('text/html') && ct !== '') continue
+    const result = await fetchIfHtml(url)
+    if (!result) continue
 
     pages.push(result)
 
@@ -112,25 +103,31 @@ export async function crawlTarget(startUrl: string): Promise<CrawlResult> {
     }
   }
 
-  // Also parse sitemap.xml for additional paths (non-blocking)
+  // ─── Sitemap supplement ───────────────────────────────────────────────────
+  // Parse sitemap.xml for additional paths not discovered via link crawling.
+  // Any new URLs go back into the queue; the main loop guard above handles the
+  // remaining capacity — no separate drain loop needed.
   try {
     const sitemapUrl = `${base.origin}/sitemap.xml`
     if (!visited.has(sitemapUrl)) {
+      visited.add(sitemapUrl)
       const sitemap = await fetchTarget(sitemapUrl)
       if (sitemap.statusCode === 200 && sitemap.html.includes('<loc>')) {
         const locs = sitemap.html.match(/<loc>([^<]+)<\/loc>/gi) || []
         linksFound += locs.length
 
         for (const loc of locs) {
-          const url = loc.replace(/<\/?loc>/gi, '').trim()
+          const rawUrl = loc.replace(/<\/?loc>/gi, '').trim()
           try {
-            const resolved = new URL(url)
+            const resolved = new URL(rawUrl)
             if (resolved.origin === base.origin) {
               resolved.search = ''
               resolved.hash   = ''
               const norm = resolved.href.replace(/\/$/, '') || resolved.href
-              if (!visited.has(norm) && pages.length + queue.length < SCAN_CONFIG.MAX_PAGES) {
-                queue.push({ url: resolved.href, depth: 1 })
+              if (!visited.has(norm) && pages.length < SCAN_CONFIG.MAX_PAGES) {
+                visited.add(norm)
+                const page = await fetchIfHtml(resolved.href)
+                if (page) pages.push(page)
               }
             }
           } catch { /* skip */ }
@@ -139,24 +136,7 @@ export async function crawlTarget(startUrl: string): Promise<CrawlResult> {
     }
   } catch { /* sitemap is optional */ }
 
-  // Drain remaining queue up to MAX_PAGES
-  while (queue.length > 0 && pages.length < SCAN_CONFIG.MAX_PAGES) {
-    const next = queue.shift()
-    if (!next) break
-
-    const normalised = next.url.replace(/\/$/, '') || next.url
-    if (visited.has(normalised)) continue
-    visited.add(normalised)
-
-    const result = await fetchTarget(next.url)
-    if (!result.error && result.statusCode !== 0) {
-      const ct = result.headers['content-type'] ?? ''
-      if (ct.includes('text/html') || ct === '') {
-        pages.length < SCAN_CONFIG.MAX_PAGES && pages.push(result)
-      }
-    }
-  }
-
+  // Fallback: if primary fetch failed entirely, re-fetch startUrl directly
   const primary = pages[0] ?? await fetchTarget(startUrl)
 
   return {

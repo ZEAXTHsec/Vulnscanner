@@ -1,33 +1,38 @@
 'use client'
 
 // components/scanner/ScanHistory.tsx
-// Shows recent scans. Uses the local store (store/index.ts) as primary source
-// so results appear instantly after a scan, without a Supabase round-trip.
-// On mount, if the store is empty, falls back to Supabase to load server-side history.
+// Shows recent scans.
+//
+// Data strategy (#19 fix):
+//   1. On mount — init local store from localStorage (instant, no network)
+//   2. If localStorage is empty — fetch from Supabase as authoritative fallback
+//   3. If localStorage has data — merge with fresh Supabase rows in background
+//      so cross-device / post-clear-browser history is always up to date.
+//   4. Subscribe to local store — new scans appear instantly without a DB round-trip.
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { ScanReport } from '@/lib/types'
-import { initStore, getHistory, subscribe } from '@/store/index'
+import { initStore, getHistory, subscribe, addReport } from '@/store/index'
 import { supabase } from '@/lib/supabase'
 
 interface ScanRow {
-  id: string
-  url: string
-  score: number
-  high: number
-  medium: number
-  low: number
+  id:         string
+  url:        string
+  score:      number
+  high:       number
+  medium:     number
+  low:        number
   created_at: string
 }
 
 function reportToRow(r: ScanReport): ScanRow {
   return {
-    id: r.scanId,
-    url: r.url,
-    score: r.summary.score,
-    high: r.summary.high,
-    medium: r.summary.medium,
-    low: r.summary.low,
+    id:         r.scanId,
+    url:        r.url,
+    score:      r.summary.score,
+    high:       r.summary.high,
+    medium:     r.summary.medium,
+    low:        r.summary.low,
     created_at: r.timestamp,
   }
 }
@@ -43,26 +48,58 @@ const ClockSVG = () => (
 )
 
 export default function ScanHistory() {
-  const [scans, setScans] = useState<ScanRow[]>([])
+  const [scans,   setScans]   = useState<ScanRow[]>([])
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    initStore()
-    const storeHistory = getHistory()
-
-    if (storeHistory.length > 0) {
-      setScans(storeHistory.map(reportToRow))
-      setLoading(false)
-    } else {
-      supabase
+  const refreshFromSupabase = useCallback(async (existingIds: Set<string>) => {
+    try {
+      const { data, error } = await supabase
         .from('scans')
         .select('id, url, score, high, medium, low, created_at')
         .order('created_at', { ascending: false })
-        .limit(10)
-        .then(({ data, error }) => {
-          if (!error && data) setScans(data as ScanRow[])
-          setLoading(false)
-        })
+        .limit(20)
+
+      if (error || !data) return
+
+      // Merge: rows from DB that aren't already in local store get injected
+      // so history is unified across devices/sessions.
+      for (const row of data as ScanRow[]) {
+        if (!existingIds.has(row.id)) {
+          // Minimal ScanReport shape — enough for the store dedup key
+          addReport({
+            scanId:    row.id,
+            url:       row.url,
+            timestamp: row.created_at,
+            status:    'completed',
+            results:   [],
+            summary: {
+              total: 0, high: row.high, medium: row.medium, low: row.low,
+              passed: 0, info: 0, skipped: 0, score: row.score,
+              crawlStats: { pagesCrawled: 0, endpointsTested: 0, linksFound: 0 },
+            },
+          })
+        }
+      }
+    } catch { /* Supabase unavailable — local store is sufficient */ }
+  }, [])
+
+  useEffect(() => {
+    initStore()
+    const local = getHistory()
+
+    if (local.length > 0) {
+      setScans(local.map(reportToRow))
+      setLoading(false)
+      // Background merge with Supabase to pick up cross-device history
+      const ids = new Set(local.map(r => r.scanId))
+      refreshFromSupabase(ids)
+    } else {
+      // Cold start — Supabase is the only source
+      refreshFromSupabase(new Set()).then(() => {
+        const updated = getHistory()
+        if (updated.length > 0) setScans(updated.map(reportToRow))
+        setLoading(false)
+      })
     }
 
     const unsubscribe = subscribe(() => {
@@ -71,7 +108,7 @@ export default function ScanHistory() {
     })
 
     return unsubscribe
-  }, [])
+  }, [refreshFromSupabase])
 
   if (loading) return (
     <div style={{
@@ -171,22 +208,19 @@ export default function ScanHistory() {
 
             {/* Critical */}
             <div style={{
-              fontFamily: 'var(--font-mono)', fontSize: '0.88rem',
-              fontWeight: 700,
+              fontFamily: 'var(--font-mono)', fontSize: '0.88rem', fontWeight: 700,
               color: scan.high > 0 ? 'var(--red)' : 'var(--text-dim)',
             }}>{scan.high}</div>
 
             {/* Medium */}
             <div style={{
-              fontFamily: 'var(--font-mono)', fontSize: '0.88rem',
-              fontWeight: 700,
+              fontFamily: 'var(--font-mono)', fontSize: '0.88rem', fontWeight: 700,
               color: scan.medium > 0 ? 'var(--orange)' : 'var(--text-dim)',
             }}>{scan.medium}</div>
 
             {/* Low */}
             <div style={{
-              fontFamily: 'var(--font-mono)', fontSize: '0.88rem',
-              fontWeight: 600,
+              fontFamily: 'var(--font-mono)', fontSize: '0.88rem', fontWeight: 600,
               color: scan.low > 0 ? 'var(--yellow)' : 'var(--text-dim)',
             }}>{scan.low}</div>
 

@@ -1,26 +1,14 @@
 // lib/constants.ts
 
 export const SCAN_CONFIG = {
-  FETCH_TIMEOUT_MS: 10000,
-  MAX_CRAWL_DEPTH: 2,
-  MAX_PAGES: 5,
-  MAX_CONCURRENT_CHECKS: 4,
+  FETCH_TIMEOUT_MS:        10_000,
+  CHECK_TIMEOUT_MS:         4_000,  // per-check hard timeout (issue #10)
+  MAX_CRAWL_DEPTH:              2,
+  MAX_PAGES:                    5,
+  MAX_CONCURRENT_CHECKS:        4,
+  EXPOSED_FILES_CONCURRENCY:    6,  // batched, not Promise.all (issue #11)
   USER_AGENT: 'VulnScanner/1.0 (security-audit-bot)',
 } as const
-
-export const SEVERITY_SCORE: Record<string, number> = {
-  high:   8,
-  medium: 5,
-  low:    2,
-  info:   0,
-}
-
-// Score penalty per finding — used to compute overall site score
-export const SCORE_PENALTIES: Record<string, number> = {
-  high:   20,
-  medium: 10,
-  low:    5,
-}
 
 export const SECURITY_HEADERS = [
   'content-security-policy',

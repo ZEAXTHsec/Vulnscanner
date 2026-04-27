@@ -61,14 +61,15 @@ export async function POST(req: NextRequest) {
     const stack = detectStack(primary.headers, primary.html)
 
     const ctx: ScanContext = {
-      scanId: crypto.randomUUID(),
-      url: primary.url,
-      html: primary.html,
-      headers: primary.headers,
+      scanId:     crypto.randomUUID(),
+      url:        primary.url,
+      html:       primary.html,
+      headers:    primary.headers,
       statusCode: primary.statusCode,
-      timestamp: new Date().toISOString(),
+      timestamp:  new Date().toISOString(),
       stack,
       crawlStats,
+      pages:      crawl.pages,   // all crawled pages available to checks (#12)
     }
 
     let report

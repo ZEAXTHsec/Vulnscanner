@@ -2,6 +2,7 @@
 
 import { Check, ScanContext, ScanResult } from '@/lib/types'
 import { fetchPath } from '@/lib/scanner/fetcher'
+import { SCAN_CONFIG } from '@/lib/constants'
 import { exposedFilesHighPrompt, exposedFilesMediumPrompt } from '@/lib/utils/fix-prompts'
 
 const EXPOSED_FILE_PATHS: {
@@ -122,30 +123,41 @@ export const exposedFilesCheck: Check = {
 
     const exposed: { path: string; label: string; severity: string }[] = []
 
-    await Promise.all(
-      EXPOSED_FILE_PATHS.map(async ({ path, label, severity, contentSignal, secondarySignal }) => {
-        try {
-          const res = await fetchPath(ctx.url, path)
-          if (res.statusCode !== 200) return
+    // Batched concurrency — avoids firing 35+ simultaneous requests which
+    // exhausts the global 9s budget on slow targets (issue #11).
+    const queue = [...EXPOSED_FILE_PATHS]
 
+    async function checkNext(): Promise<void> {
+      const entry = queue.shift()
+      if (!entry) return
+      const { path, label, severity, contentSignal, secondarySignal } = entry
+
+      try {
+        const res = await fetchPath(ctx.url, path)
+        if (res.statusCode === 200) {
           const body = res.html
 
-          // Reject soft-404s — body matches homepage
-          if (homepageFingerprint && body.slice(0, 500) === homepageFingerprint) return
+          const isSoft404 = homepageFingerprint && body.slice(0, 500) === homepageFingerprint
+          const isErrorPage = /404|not found|page not found|does not exist/i.test(body.slice(0, 300))
 
-          // Reject generic error pages
-          if (/404|not found|page not found|does not exist/i.test(body.slice(0, 300))) return
+          if (!isSoft404 && !isErrorPage) {
+            const primaryOk  = !contentSignal   || contentSignal.test(body)
+            const secondaryOk = !secondarySignal || secondarySignal.test(body)
+            if (primaryOk && secondaryOk) {
+              exposed.push({ path, label, severity })
+            }
+          }
+        }
+      } catch { /* not accessible */ }
 
-          // Require primary content signal
-          if (contentSignal && !contentSignal.test(body)) return
+      await checkNext()
+    }
 
-          // Require secondary signal if defined (double-confirmation for PHP files)
-          if (secondarySignal && !secondarySignal.test(body)) return
-
-          exposed.push({ path, label, severity })
-        } catch { /* not accessible */ }
-      })
+    const workers = Array.from(
+      { length: Math.min(SCAN_CONFIG.EXPOSED_FILES_CONCURRENCY, EXPOSED_FILE_PATHS.length) },
+      () => checkNext()
     )
+    await Promise.all(workers)
 
     if (exposed.length === 0) {
       results.push({
@@ -154,7 +166,6 @@ export const exposedFilesCheck: Check = {
         severity: 'info',
         status: 'pass',
         detail: `Checked ${EXPOSED_FILE_PATHS.length} common sensitive file paths — none accessible.`,
-        score: 0,
       })
       return results
     }
@@ -171,7 +182,6 @@ export const exposedFilesCheck: Check = {
         detail: `High-risk files are publicly accessible: ${highSeverity.map((e) => e.label).join(', ')}. An attacker can download these right now to extract credentials, API keys, or source code.`,
         fix: 'Block access to these files immediately via .htaccess or nginx config. Rotate any credentials that may have been exposed.',
         fixPrompt: exposedFilesHighPrompt(ctx.stack),
-        score: 10,
         raw: { exposed: highSeverity },
       })
     }
@@ -185,7 +195,6 @@ export const exposedFilesCheck: Check = {
         detail: `Accessible files: ${others.map((e) => e.label).join(', ')}. These reveal your dependency versions and tech stack, helping attackers identify known CVEs.`,
         fix: 'Restrict access to config and dependency files via server config.',
         fixPrompt: exposedFilesMediumPrompt(ctx.stack),
-        score: 3,
         raw: { exposed: others },
       })
     }

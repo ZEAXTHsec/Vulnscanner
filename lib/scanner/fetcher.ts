@@ -2,6 +2,51 @@
 
 import { SCAN_CONFIG } from '@/lib/constants'
 import { FetchResult } from '@/lib/types'
+import { lookup } from 'dns/promises'
+
+// ─── SSRF guard ──────────────────────────────────────────────────────────────
+// Resolve the hostname and block private/loopback/link-local IPs before
+// any outbound fetch.  Prevents scanning AWS metadata (169.254.169.254),
+// localhost, and internal RFC-1918 ranges.
+
+const PRIVATE_IP_RE = /^(
+  127\.|          # loopback
+  0\.|            # 0.0.0.0/8
+  10\.|           # RFC-1918
+  192\.168\.|     # RFC-1918
+  172\.(1[6-9]|2\d|3[01])\.|  # RFC-1918 172.16–31
+  169\.254\.|     # link-local (AWS metadata, etc.)
+  ::1$|           # IPv6 loopback
+  fc|fd|fe80      # IPv6 ULA / link-local
+)/x
+
+function isPrivateIp(ip: string): boolean {
+  return PRIVATE_IP_RE.test(ip)
+}
+
+async function assertPublicHost(url: string): Promise<void> {
+  const hostname = new URL(url).hostname
+
+  // Reject bare IP literals immediately
+  if (/^\d{1,3}(\.\d{1,3}){3}$/.test(hostname) || hostname.includes(':')) {
+    if (isPrivateIp(hostname)) {
+      throw new Error(`SSRF blocked: private/loopback IP "${hostname}"`)
+    }
+    return
+  }
+
+  try {
+    const { address } = await lookup(hostname)
+    if (isPrivateIp(address)) {
+      throw new Error(`SSRF blocked: "${hostname}" resolves to private IP "${address}"`)
+    }
+  } catch (err) {
+    if (err instanceof Error && err.message.startsWith('SSRF blocked')) throw err
+    // DNS lookup failure — let the fetch attempt handle it naturally
+  }
+}
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
 
 function normalizeHeaders(raw: Headers): Record<string, string> {
   const normalized: Record<string, string> = {}
@@ -23,34 +68,40 @@ function buildAbortController(): { controller: AbortController; clear: () => voi
   }
 }
 
+// ─── Public API ───────────────────────────────────────────────────────────────
+
 export async function fetchTarget(url: string): Promise<FetchResult> {
+  try {
+    await assertPublicHost(url)
+  } catch (err) {
+    return {
+      url,
+      html: '',
+      headers: {},
+      statusCode: 0,
+      error: err instanceof Error ? err.message : 'SSRF check failed',
+    }
+  }
+
   const { controller, clear } = buildAbortController()
 
   try {
     const response = await fetch(url, {
       signal: controller.signal,
-      headers: {
-        'User-Agent': SCAN_CONFIG.USER_AGENT,
-      },
+      headers: { 'User-Agent': SCAN_CONFIG.USER_AGENT },
       redirect: 'follow',
     })
 
     clear()
 
-    const html = await response.text()
+    const html    = await response.text()
     const headers = normalizeHeaders(response.headers)
 
-    return {
-      url,
-      html,
-      headers,
-      statusCode: response.status,
-    }
+    return { url, html, headers, statusCode: response.status }
   } catch (err: unknown) {
     clear()
 
-    const isTimeout =
-      err instanceof Error && err.name === 'AbortError'
+    const isTimeout = err instanceof Error && err.name === 'AbortError'
 
     return {
       url,
@@ -64,12 +115,9 @@ export async function fetchTarget(url: string): Promise<FetchResult> {
   }
 }
 
-// Fetch a path relative to the base URL (used for sensitive path checks later)
-export async function fetchPath(
-  baseUrl: string,
-  path: string
-): Promise<FetchResult> {
-  const base = new URL(baseUrl)
+/** Fetch a path relative to the base URL (used for sensitive path checks). */
+export async function fetchPath(baseUrl: string, path: string): Promise<FetchResult> {
+  const base   = new URL(baseUrl)
   const target = `${base.origin}${path}`
   return fetchTarget(target)
 }
